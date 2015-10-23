@@ -6,6 +6,10 @@ app.get('/', function(req, res){
   res.send('hi');
 });
 
+io.on('connection', function(socket){
+  console.log('A user connected');
+});
+
 http.listen(8082, function(){
   console.log('icepixel running on *:8082');
 });
