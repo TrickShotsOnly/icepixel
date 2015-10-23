@@ -13,6 +13,6 @@ io.on('connection', function(socket){
   });
 });
 
-http.listen(8081, function(){
-  console.log('icepixel running on *:8081');
+http.listen(9000, function(){
+  console.log('icepixel running on *:9000');
 });
