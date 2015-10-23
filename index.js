@@ -3,13 +3,16 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 app.get('/', function(req, res){
-  res.send('hi');
-});
-
-io.on('connection', function(socket){
+  res.sendFile(__dirname + '/view/index.html');
   console.log('A user connected');
 });
 
-http.listen(8082, function(){
-  console.log('icepixel running on *:8082');
+io.on('connection', function(socket){
+  socket.on('disconnect', function(){
+    console.log('A user disconnected');
+  });
+});
+
+http.listen(8081, function(){
+  console.log('icepixel running on *:8081');
 });
