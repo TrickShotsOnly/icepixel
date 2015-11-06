@@ -6,17 +6,19 @@
 
 	exports.Player = function(id){
     this.id = id;
-		this.inputX = 0;
+        this.username = "";
+        this.inputX = 0;
 		this.inputY = 0;
     this.x = 0;
     this.y = 0;
   };
 	
-  exports.State = function(){
+  exports.Room = function(){
     this.players = [];
     this.addPlayer = function(id){
 			player = new exports.Player(id);
       this.players.push(player);
+        return player;
     };
     this.removePlayer = function(id){
       for(i = 0; i < this.players.length; i++){
@@ -35,4 +37,4 @@
     };
   };
 
-})(typeof exports === 'undefined'? this['engine']={}: exports);
+})(typeof exports === "undefined"? this["engine"]={}: exports);
