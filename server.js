@@ -2,7 +2,7 @@ var express = require("express");
 var app = express();
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
-var engine = require("./play/js/engine");
+var engine = require("./view/js/engine");
 var UUID = require("node-uuid");
 
 var rooms = [];
@@ -10,11 +10,10 @@ var rooms = [];
 //Routing
 
 //Join page
-app.use("/", express.static("join"));
+app.use("/", express.static("view"));
 
 //Add first room
 
-addRoom();
 addRoom();
 
 //Run server
@@ -24,9 +23,10 @@ http.listen(9000, function () {
 
 //Handle connection
 io.on("connection", function (socket) {
-    socket.on('requestRoom', function (room) {
+  console.log('A user joined');
+    socket.on('joinRoom', function (room) {
         console.log('Request for room ' + room);
-        var connectedRoom = 1;
+        var connectedRoom = room;
         var id = UUID();
         socket.emit("init", id);
         socket.on("username", function (username) {
@@ -68,8 +68,7 @@ function listConnectedPlayers(state) {
 }
 
 function addRoom() {
-    app.use("/r" + rooms.length, express.static("play"));
-    console.log("Added room /r" + rooms.length - 1);
+    console.log("Added room " + rooms.length - 1);
     var room = new engine.Room();
     rooms.push(room);
 }

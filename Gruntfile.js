@@ -3,8 +3,7 @@ module.exports = function (grunt) {
         uglify: {
             main: {
                 files: {
-                    "join/js/main.min.js": "join/js/main.js",
-                    "play/js/main.min.js": "play/js/main.js"
+                    "view/js/main.min.js": "view/js/main.js"
                 }
             }
         }
