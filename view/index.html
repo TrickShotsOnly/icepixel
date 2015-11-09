@@ -3,16 +3,29 @@
 
 <head>
     <title>icepixel</title>
+    <link rel="stylesheet" type="text/css" href="css/main.css">
 </head>
 
 <body>
-    <form action="" id="form">
-        <input id="m" autocomplete="off" />
-        <button id="j">Join</button>
-    </form>
+    <div id="content">
+        <div id="form-containter" align="center">
+            <form id="form">
+                <input id="m" placeholder="Username" />
+                <div id="m-separator"></div>
+                <select id="s">
+                </select>
+                <div id="m-separator"></div>
+                <button id="j" class="submit">Join</button>
+                <div id="m-separator"></div>
+            </form>
+        </div>
+        <div id="notify-box">
+        </div>
+    </div>
 </body>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-<script src="js/main.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="js/main.js"></script>
 
 </html>

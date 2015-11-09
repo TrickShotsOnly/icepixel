@@ -2,6 +2,7 @@ var express = require("express");
 var app = express();
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
+var bodyParser = require("body-parser");
 var engine = require("./view/js/engine");
 var UUID = require("node-uuid");
 
@@ -9,11 +10,63 @@ var rooms = [];
 
 //Routing
 
-//Join page
 app.use("/", express.static("view"));
+app.use(bodyParser.urlencoded({
+    extended: false
+}));
+
+app.get("/getroomdata", function (req, res) {
+    res.json(rooms.length);
+})
+
+//Authentication
+
+/*Authentication errors:
+cerror 0 = no errors :D
+cerror 1 = room not available
+cerror 2 = no username
+cerror 3 = username not allowed
+*/
+
+app.post("/roomrequest", function (req, res) {
+    var room = req.body.room;
+    var username = req.body.username;
+    console.log(username);
+    var id = UUID();
+    console.log("Request for room " + room);
+    var response = {
+        error: 0,
+        id: 0
+    };
+    response.id = id;
+    if (rooms[room]) {
+        if (username == "" || username == null) {
+            response.error = 2;
+            res.json(response);
+            console.log("No username, returning cerror 2");
+            return;
+        } else {
+            console.log("Connection: " + username + " : " + id);
+            res.json(response);
+            return;
+        }
+    } else {
+        console.log("Requested room " + room + " not available, returning cerror 1");
+        response.error = 1;
+        res.json(response);
+        return;
+    }
+});
+
+app.post("/usernamerequest", function (req, res) {
+    var username = req.body.username;
+    console.log("Username is");
+});
 
 //Add first room
 
+addRoom();
+addRoom();
 addRoom();
 
 //Run server
@@ -23,18 +76,29 @@ http.listen(9000, function () {
 
 //Handle connection
 io.on("connection", function (socket) {
-  console.log('A user joined');
-    socket.on('joinRoom', function (room) {
-        console.log('Request for room ' + room);
-        var connectedRoom = room;
+    socket.on("joinRoom", function (room) {
         var id = UUID();
-        socket.emit("init", id);
-        socket.on("username", function (username) {
-            var player = room.addPlayer(id);
-            player.username = username;
+        if (rooms[room]) {
+            console.log("Requested room " + room + " available, querying for username");
 
-            console.log("User " + player.username + " : " + id + " connected");
-            listConnectedPlayers(connectedRoom);
+            socket.emit("init", id);
+        } else {
+            console.log("Requested room " + room + " not available, returning cerror 0");
+            socket.emit("cerror", 0);
+            return;
+        }
+        socket.on("username", function (name) {
+            if (name == null || name == "") {
+                socket.emit("cerror", 1);
+                console.log("No username entered, returning cerror 1")
+                return;
+            }
+            var player = rooms[room].addPlayer(id);
+            player.username = name;
+
+            console.log("Connection " + '"' + player.username + '"' + " : " + id);
+
+            socket.emit("join", rooms[room]);
 
             socket.on("input", function (data) {
                 player.inputX = data.x;
@@ -42,9 +106,8 @@ io.on("connection", function (socket) {
             });
 
             socket.on("disconnect", function () {
-                state.removePlayer(id);
-                console.log("User " + id + " disconnected");
-                listConnectedPlayers(connectedRoom);
+                rooms[room].removePlayer(id);
+                console.log("Disconnection " + '"' + player.username + '"' + " : " + id);
             });
         });
     });
@@ -68,7 +131,7 @@ function listConnectedPlayers(state) {
 }
 
 function addRoom() {
-    console.log("Added room " + rooms.length - 1);
     var room = new engine.Room();
+    console.log("Added room " + rooms.length);
     rooms.push(room);
 }
