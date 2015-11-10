@@ -1,6 +1,6 @@
-var socket;
-var id;
 var numRooms;
+var socket = io();
+var id;
 
 $(document).ready(function () {
     $.get("getroomdata", function (data) {
@@ -16,15 +16,24 @@ $(document).ready(function () {
     });
 });
 
-function join(room) {
+function join(room){
+  var username = $("$#m").val();
+  socket.emit("roomRequest", room);
+  socket.on("usernameRequest", function(data){
+    id = data;
+    socket.emit("")
+  });
+}
+
+/*function join(room) {
     var username = $("#m").val();
     $.post("roomrequest", {
         room: room,
         username: username
     }, function (data) {
         if (data.error == 0) {
-            id = data.id;
-            notify("Successfully joined!", "#27de00");
+            notify("Connecting", "#27de00");
+            play(id);
         } else {
             if (data.error == 1) {
                 notify("Room not available", "#ff0000");
@@ -35,6 +44,17 @@ function join(room) {
             }
         }
     });
+}*/
+
+function play(id){
+  notify("hi");
+  socket.emit("auth", id);
+  socket.on("jerror", function(){
+    notify("Connection error, please reload", "#ff0000");
+  });
+  socket.on('join', function(username){
+    notify("Successfully connected with username " + username, "#27de00");
+  });
 }
 
 function notify(message, color) {

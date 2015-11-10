@@ -7,6 +7,7 @@ var engine = require("./view/js/engine");
 var UUID = require("node-uuid");
 
 var rooms = [];
+var authentications = [];
 
 //Routing
 
@@ -36,6 +37,7 @@ app.post("/roomrequest", function (req, res) {
     console.log("Request for room " + room);
     var response = {
         error: 0,
+        username: "",
         id: 0
     };
     response.id = id;
@@ -46,7 +48,9 @@ app.post("/roomrequest", function (req, res) {
             console.log("No username, returning cerror 2");
             return;
         } else {
-            console.log("Connection: " + username + " : " + id);
+            response.username = username;
+            console.log("Authentication: " + username + " : " + id);
+            authentications.push(response);
             res.json(response);
             return;
         }
@@ -75,7 +79,27 @@ http.listen(9000, function () {
 });
 
 //Handle connection
-io.on("connection", function (socket) {
+
+io.on("connection", function(socket){
+  console.log("Socket.IO connection");
+});
+
+/*io.on("connection", function(socket){
+  socket.on("auth", function(id){
+    console.log("Socket connection attempted by id " + id);
+    for(i = 0; i < 0; i++){
+      if(authentications[i].id == id){
+        socket.emit("join", authentications[i].username);
+        console.log("Success");
+        break;
+      }
+      socket.emit("join", 1);
+      console.log("Error");
+    }
+  });
+});*/
+
+/*io.on("connection", function (socket) {
     socket.on("joinRoom", function (room) {
         var id = UUID();
         if (rooms[room]) {
@@ -111,7 +135,7 @@ io.on("connection", function (socket) {
             });
         });
     });
-});
+});*/
 
 
 setInterval(updateRooms, 15);
