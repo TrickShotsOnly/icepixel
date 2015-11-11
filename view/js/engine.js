@@ -3,8 +3,8 @@
   exports.Player = function(id, username) {
     this.id = id;
     this.username = username;
-    this.inputx = 0;
-    this.inputy = 0;
+    this.inputX = 0;
+    this.inputY = 0;
     this.x = 0;
     this.y = 0;
   };
