@@ -62,15 +62,8 @@ app.post("/roomrequest", function (req, res) {
     }
 });
 
-app.post("/usernamerequest", function (req, res) {
-    var username = req.body.username;
-    console.log("Username is");
-});
-
 //Add first room
 
-addRoom();
-addRoom();
 addRoom();
 
 //Run server
@@ -81,7 +74,15 @@ http.listen(9000, function () {
 //Handle connection
 
 io.on("connection", function(socket){
-  console.log("Socket.IO connection");
+  var id = UUID();
+  socket.on("joinRoom", function(room){
+    console.log("Request to join room " + room + " by " + id);
+    if (rooms[room]){
+      socket.emit("joinRoomResponse", 0);
+    }else{
+      socket.emit("joinRoomResponse", 1);
+    }
+  });
 });
 
 /*io.on("connection", function(socket){

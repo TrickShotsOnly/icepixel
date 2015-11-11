@@ -1,6 +1,6 @@
 var numRooms;
-var socket = io();
 var id;
+var socket = io();
 
 $(document).ready(function () {
     $.get("getroomdata", function (data) {
@@ -17,12 +17,14 @@ $(document).ready(function () {
 });
 
 function join(room){
-  var username = $("$#m").val();
-  socket.emit("roomRequest", room);
-  socket.on("usernameRequest", function(data){
-    id = data;
-    socket.emit("")
-  });
+  socket.emit("joinRoom", room);
+  socket.on("joinRoomResponse", function(res){
+    if(res == 0){
+      console.log("k");
+    }else{
+      notify("Room not available.", "red");
+    }
+  })
 }
 
 /*function join(room) {
@@ -50,7 +52,7 @@ function play(id){
   notify("hi");
   socket.emit("auth", id);
   socket.on("jerror", function(){
-    notify("Connection error, please reload", "#ff0000");
+    notify("Connection error, please reload", "#red");
   });
   socket.on('join', function(username){
     notify("Successfully connected with username " + username, "#27de00");

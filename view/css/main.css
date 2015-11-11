@@ -1,10 +1,34 @@
 body {
     background-color: #141313;
     text-align: center;
+    font-family: 'Quicksand', sans-serif;
+}
+
+#title{
+  color: #2199ff;
+  text-shadow: 0 0 6px #2199ff;
+  font-size:4em;
+  margin:0;
+  padding:10px;
+}
+#about{
+  color: #2199ff;
+  text-decoration: none;
+}
+
+#description{
+    font-family: 'Quicksand', sans-serif;
+    color: #2199ff;
+    padding:10px;
+}
+
+#form-container{
 }
 
 #m {
-    width: 80%;
+    font-family: 'Quicksand', sans-serif;
+    max-width: 500px;
+    width:100%;
     height: auto;
     display: block;
     align-content: "center";
@@ -19,7 +43,9 @@ body {
 }
 
 #s {
-    width: 80%;
+    font-family: 'Quicksand', sans-serif;
+    max-width: 500px;
+    width:100%;
     height: auto;
     display: block;
     align-content: "center";
@@ -34,7 +60,9 @@ body {
     background-color: #2199ff;
     border: 0;
     font-size: 2em;
-    width: 80%;
+    font-family: 'Quicksand', sans-serif;
+    max-width: 500px;
+    width:100%;
     height: auto;
     display: block;
     color: #141313;
@@ -43,8 +71,10 @@ body {
 #notify-box {
     margin: auto;
     font-size: 1.5em;
+    font-family: 'Quicksand', sans-serif;
     height: 0px;
-    width: 80%;
+    max-width: 500px;
+    width:100%;
     text-overflow: clip;
     word-wrap: break-word;
     overflow: hidden;
