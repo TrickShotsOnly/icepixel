@@ -1,99 +1,91 @@
 body {
-    background-color: #141313;
-    text-align: center;
-    font-family: 'Quicksand', sans-serif;
+  background-color: #141313;
+  text-align: center;
+  font-family: 'Play', sans-serif;
 }
 
-#title{
+#start{
+  opacity:0;
+}
+
+#title {
   color: #2199ff;
   text-shadow: 0 0 6px #2199ff;
-  font-size:4em;
-  margin:0;
-  padding:10px;
+  font-size: 4em;
+  margin: 0;
+  padding: 10px;
 }
-#about{
+#about {
   color: #2199ff;
   text-decoration: none;
 }
-
-#description{
-    font-family: 'Quicksand', sans-serif;
-    color: #2199ff;
-    padding:10px;
+#description {
+  font-family: 'Play', sans-serif;
+  color: #2199ff;
+  padding: 10px;
 }
-
-#form-container{
-}
-
+#form-container {}
 #m {
-    font-family: 'Quicksand', sans-serif;
-    max-width: 500px;
-    width:100%;
-    height: auto;
-    display: block;
-    align-content: "center";
-    font-size: 2em;
-    background-color: #212122;
-    border-color: #2199ff;
-    color: #2199ff;
+  font-family: 'Play', sans-serif;
+  max-width: 500px;
+  width: 100%;
+  height: auto;
+  display: block;
+  align-content: "center";
+  font-size: 2em;
+  background-color: #212122;
+  border-color: #2199ff;
+  color: #2199ff;
 }
-
 #m-separator {
-    height: 10px;
+  height: 10px;
 }
-
 #s {
-    font-family: 'Quicksand', sans-serif;
-    max-width: 500px;
-    width:100%;
-    height: auto;
-    display: block;
-    align-content: "center";
-    font-size: 2em;
-    background-color: #212122;
-    border-color: #2199ff;
-    border-width: 2px;
-    color: #2199ff;
+  font-family: 'Play', sans-serif;
+  max-width: 500px;
+  width: 100%;
+  height: auto;
+  display: block;
+  align-content: "center";
+  font-size: 2em;
+  background-color: #212122;
+  border-color: #2199ff;
+  border-width: 2px;
+  color: #2199ff;
 }
-
 #j {
-    background-color: #2199ff;
-    border: 0;
-    font-size: 2em;
-    font-family: 'Quicksand', sans-serif;
-    max-width: 500px;
-    width:100%;
-    height: auto;
-    display: block;
-    color: #141313;
+  background-color: #2199ff;
+  border: 0;
+  font-size: 2em;
+  font-family: 'Play', sans-serif;
+  max-width: 500px;
+  width: 100%;
+  height: auto;
+  display: block;
+  color: #141313;
 }
-
 #notify-box {
-    margin: auto;
-    font-size: 1.5em;
-    font-family: 'Quicksand', sans-serif;
-    height: 0px;
-    max-width: 500px;
-    width:100%;
-    text-overflow: clip;
-    word-wrap: break-word;
-    overflow: hidden;
+  margin: auto;
+  font-size: 1.5em;
+  font-family: 'Play', sans-serif;
+  height: 0px;
+  max-width: 500px;
+  width: 100%;
+  text-overflow: clip;
+  word-wrap: break-word;
+  overflow: hidden;
 }
-
 ::-webkit-input-placeholder {
-    color: #444444;
+  color: #444444;
 }
-
 :-moz-placeholder {
-    /* Firefox 18- */
-    color: #444444;
+  /* Firefox 18- */
+  color: #444444;
 }
-
 ::-moz-placeholder {
-    /* Firefox 19+ */
-    color: #444444;
+  /* Firefox 19+ */
+  color: #444444;
 }
-
 :-ms-input-placeholder {
-    color: #444444;
+  color: #444444;
 }
