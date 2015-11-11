@@ -1,14 +1,12 @@
 (function(exports) {
-  exports.Vec2 = function() {
-    this.x = 0;
-    this.y = 0;
-  };
 
   exports.Player = function(id, username) {
     this.id = id;
     this.username = username;
-    this.input = exports.Vec2(0, 0);
-    this.pos = exports.Vec2(0, 0);
+    this.inputx = 0;
+    this.inputy = 0;
+    this.x = 0;
+    this.y = 0;
   };
 
   exports.Room = function() {

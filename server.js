@@ -64,8 +64,14 @@ io.on("connection", function(socket) {
       //Ingame
       var playerIndex = rooms[room].addPlayer(id, username);
 
+      socket.on("inputUpdate", function(input) {
+        rooms[room].getPlayerByIndex(playerIndex).inputX = input.x;
+        rooms[room].getPlayerByIndex(playerIndex).inputY = input.y;
+      });
+
       //Disconnections
-      socket.on("disconnect", function(){
+      socket.on("disconnect", function() {
+        rooms[room].removePlayerById(id);
         console.log("Disconnection: room: " + room + " id: " + id + " username: " + username);
       });
     });
@@ -77,9 +83,29 @@ setInterval(updateRooms, 15);
 function updateRooms() {
   for (a = 0; a < rooms.length; a++) {
     for (i = 0; i < rooms[a].players.length; i++) {
-      rooms[a].players[i].x += 1;
+      var curPlayer = rooms[a].players[i];
+      var moveX;
+      var moveY;
+
+      //Prevent cheating
+      if (curPlayer.inputX > 1 || curPlayer.inputX < -1) {
+        moveX = 0;
+        console.log("Possible cheating");
+      } else {
+        moveX = curPlayer.inputX;
+      };
+
+      if (curPlayer.inputY > 1 || curPlayer.inputY < -1) {
+        moveY = 0;
+        console.log("Possible cheating");
+      } else {
+        moveY = curPlayer.inputY;
+      };
+
+      curPlayer.x += moveX;
+      curPlayer.y += moveY;
     }
-    io.emit("stateUpdate", rooms[a]);
+    io.emit("roomUpdate", rooms[a]);
   }
 }
 

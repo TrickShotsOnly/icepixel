@@ -1,6 +1,16 @@
 var numRooms;
 var id;
 var socket = io();
+var canvas;
+var ctx;
+var curRoom;
+var playing = false;
+
+var keypress = {},
+  left = 37,
+  up = 38,
+  right = 39,
+  down = 40;
 
 $(document).ready(function() {
   $("#start").animate({
@@ -42,16 +52,6 @@ function join(room, username) {
   })
 }
 
-function play(id) {
-  var start = $("#start");
-  start.animate({
-    opacity: 0
-  }, 300);
-  start.promise().done(function(){
-    start.hide();
-  });
-}
-
 function notify(message, color) {
   var box = $("#notify-box");
   box.html(message);
@@ -65,4 +65,73 @@ function notify(message, color) {
   box.animate({
     height: height
   }, 400);
+}
+
+function play(id) {
+  var start = $("#start");
+  start.animate({
+    opacity: 0
+  }, 300);
+  start.promise().done(function() {
+    start.hide();
+  });
+
+  $("#content").append("<canvas id = 'ctx'>");
+  canvas = document.getElementById("ctx");
+  resize();
+  ctx = canvas.getContext("2d");
+
+  document.addEventListener("keydown", function(evt) {
+    keypress[evt.keyCode] = true;
+  });
+
+  document.addEventListener("keyup", function(evt) {
+    delete keypress[evt.keyCode];
+  })
+
+  update();
+
+  socket.on("roomUpdate", function(room) {
+    curRoom = room;
+  });
+}
+
+function update() {
+  var input = {
+    x: 0,
+    y: 0
+  }
+
+  if (keypress[left]) input.x -= 1;
+  if (keypress[right]) input.x += 1;
+  if (keypress[up]) input.y -= 1;
+  if (keypress[down]) input.y += 1;
+
+  socket.emit("inputUpdate", input);
+
+  render();
+  window.requestAnimationFrame(update);
+}
+
+function render() {
+  //Clear
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  //Draw players
+  if (curRoom) {
+    for (i = 0; i < curRoom.players.length; i++) {
+      ctx.fillStyle = "#27de00";
+      ctx.fillRect(curRoom.players[i].x, curRoom.players[i].y, 40, 40);
+    }
+  } else {
+    console.log("Room undefined");
+  }
+}
+
+$(window).resize(resize);
+
+function resize() {
+  if (canvas) {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
 }

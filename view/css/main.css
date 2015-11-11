@@ -3,11 +3,18 @@ body {
   text-align: center;
   font-family: 'Play', sans-serif;
 }
-
-#start{
-  opacity:0;
+canvas {
+  display: block;
+  position: absolute;
+  margin: auto;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
-
+#start {
+  opacity: 0;
+}
 #title {
   color: #2199ff;
   text-shadow: 0 0 6px #2199ff;
