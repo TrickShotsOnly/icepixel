@@ -159,6 +159,6 @@ function listConnectedPlayers(state) {
 
 function addRoom() {
   var room = new engine.Room();
-  console.log("Added room " + rooms.length);
+  console.log("Added room number " + rooms.length);
   rooms.push(room);
 }
