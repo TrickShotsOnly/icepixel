@@ -71,6 +71,10 @@ io.on("connection", function(socket) {
         curPlayer.inputY = input.y;
       });
 
+      socket.on("requestIndex", function(){
+        socket.emit("index", playerIndex);
+      });
+
       socket.on("fire", function(pos){
         //Calculate direction
         var disX = pos.x - curPlayer.x - 35;

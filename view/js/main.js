@@ -5,6 +5,7 @@ var canvas;
 var ctx;
 var curRoom;
 var playing = false;
+var playerIndex;
 
 var mouseX,
   mouseY;
@@ -74,6 +75,12 @@ function notify(message, color) {
 }
 
 function play(id) {
+  socket.emit("requestIndex");
+  socket.on("index", function(index) {
+    playerIndex = index;
+    console.log(playerIndex);
+  });
+
   var start = $("#start");
   start.animate({
     opacity: 0
@@ -142,17 +149,22 @@ function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   //Draw room
   if (curRoom) {
-    //Players
-    for (i = 0; i < curRoom.players.length; i++) {
-      ctx.fillStyle = "#2199ff";
-      ctx.fillRect(curRoom.players[i].x - 15, curRoom.players[i].y - 15, 60, 60);
-    }
     //Projectiles
     for (i = 0; i < curRoom.projectiles.length; i++) {
       ctx.fillStyle = "#2199ff";
-      ctx.globalAlpha = (curRoom.projectiles[i].lifeTime - curRoom.projectiles[i].timer)/curRoom.projectiles[i].lifeTime;
+      ctx.globalAlpha = (curRoom.projectiles[i].lifeTime - curRoom.projectiles[i].timer) / curRoom.projectiles[i].lifeTime;
       ctx.fillRect(curRoom.projectiles[i].x, curRoom.projectiles[i].y, 30, 30);
       ctx.globalAlpha = 1;
+    }
+    //Players
+    for (i = 0; i < curRoom.players.length; i++) {
+      if (curRoom.players[i].index == playerIndex) {
+        ctx.fillStyle = "#27de00";
+        console.log("myPlayer");
+      } else {
+        ctx.fillStyle = "#2199ff";
+      }
+      ctx.fillRect(curRoom.players[i].x - 15, curRoom.players[i].y - 15, 60, 60);
     }
   }
 

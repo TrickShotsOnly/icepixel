@@ -1,7 +1,8 @@
 (function(exports) {
 
-  exports.Player = function(id, username) {
+  exports.Player = function(id, username, index) {
     this.id = id;
+    this.index = index;
     this.username = username;
     this.inputX = 0;
     this.inputY = 0;
@@ -49,8 +50,8 @@
       players: [],
       projectiles: []
     };
-    this.addPlayer = function(id, username) {
-      player = new exports.Player(id, username);
+    this.addPlayer = function(id, username, index) {
+      player = new exports.Player(id, username, this.data.players.length);
       this.data.players.push(player);
       return this.data.players.indexOf(player);
     };
