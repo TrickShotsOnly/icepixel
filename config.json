@@ -1,4 +1,7 @@
 {
   "port": 9000,
-  "numRooms": 1
+  "numRooms": 1,
+  "players": {
+    "maxVel": 5
+  }
 }

@@ -6,6 +6,9 @@ var ctx;
 var curRoom;
 var playing = false;
 
+var mouseX,
+  mouseY;
+
 var keypress = {},
   left = 37,
   up = 38,
@@ -13,6 +16,9 @@ var keypress = {},
   down = 40;
 
 $(document).ready(function() {
+  $("#start").css({
+    opacity: 0
+  });
   $("#start").animate({
     opacity: 1
   }, 200);
@@ -64,7 +70,7 @@ function notify(message, color) {
   box.css("height", "0px");
   box.animate({
     height: height
-  }, 400);
+  }, 300);
 }
 
 function play(id) {
@@ -77,9 +83,26 @@ function play(id) {
   });
 
   $("#content").append("<canvas id = 'ctx'>");
+  $("#ctx").css("opacity", "0");
+  $("canvas").animate({
+    opacity: 1
+  }, 300);
   canvas = document.getElementById("ctx");
   resize();
   ctx = canvas.getContext("2d");
+
+  canvas.addEventListener("mousemove", function(evt) {
+    mouseX = evt.clientX;
+    mouseY = evt.clientY;
+  });
+
+  canvas.addEventListener("click", function(evt) {
+    var pos = {
+      x: mouseX,
+      y: mouseY
+    }
+    socket.emit("fire", pos);
+  });
 
   document.addEventListener("keydown", function(evt) {
     keypress[evt.keyCode] = true;
@@ -93,6 +116,7 @@ function play(id) {
 
   socket.on("roomUpdate", function(room) {
     curRoom = room;
+    console.log(curRoom);
   });
 }
 
@@ -116,15 +140,34 @@ function update() {
 function render() {
   //Clear
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  //Draw players
+  //Draw room
   if (curRoom) {
+    //Players
     for (i = 0; i < curRoom.players.length; i++) {
-      ctx.fillStyle = "#27de00";
-      ctx.fillRect(curRoom.players[i].x, curRoom.players[i].y, 40, 40);
+      ctx.fillStyle = "#2199ff";
+      ctx.fillRect(curRoom.players[i].x - 15, curRoom.players[i].y - 15, 60, 60);
     }
-  } else {
-    console.log("Room undefined");
+    //Projectiles
+    for (i = 0; i < curRoom.projectiles.length; i++) {
+      ctx.fillStyle = "#2199ff";
+      ctx.globalAlpha = (curRoom.projectiles[i].lifeTime - curRoom.projectiles[i].timer)/curRoom.projectiles[i].lifeTime;
+      ctx.fillRect(curRoom.projectiles[i].x, curRoom.projectiles[i].y, 30, 30);
+      ctx.globalAlpha = 1;
+    }
   }
+
+  drawCursor();
+}
+
+function drawCursor() {
+  ctx.fillStyle = "white";
+  ctx.shadowColor = "white";
+  ctx.shadowBlur = 40;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+  ctx.fillRect(mouseX - 15, mouseY - 1, 30, 2);
+  ctx.fillRect(mouseX - 1, mouseY - 15, 2, 30);
+  ctx.shadowBlur = 0;
 }
 
 $(window).resize(resize);

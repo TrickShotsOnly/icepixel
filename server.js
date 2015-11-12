@@ -63,10 +63,24 @@ io.on("connection", function(socket) {
       console.log("Connection: room: " + room + " id: " + id + " username: " + username);
       //Ingame
       var playerIndex = rooms[room].addPlayer(id, username);
+      var curPlayer = rooms[room].getPlayerByIndex(playerIndex);
+      curPlayer.maxVel = config.players.maxVel;
 
       socket.on("inputUpdate", function(input) {
-        rooms[room].getPlayerByIndex(playerIndex).inputX = input.x;
-        rooms[room].getPlayerByIndex(playerIndex).inputY = input.y;
+        curPlayer.inputX = input.x;
+        curPlayer.inputY = input.y;
+      });
+
+      socket.on("fire", function(pos){
+        //Calculate direction
+        var disX = pos.x - curPlayer.x - 35;
+        var disY = pos.y - curPlayer.y - 35;
+        var mag = Math.sqrt(disX * disX + disY * disY);
+        var dirX = disX/mag;
+        var dirY = disY/mag;
+        console.log("Fire at " + dirX + " : " + dirY);
+
+        var projectileId = rooms[room].spawnProjectile(curPlayer.x, curPlayer.y, dirX, dirY, playerIndex);
       });
 
       //Disconnections
@@ -82,8 +96,9 @@ setInterval(updateRooms, 15);
 
 function updateRooms() {
   for (a = 0; a < rooms.length; a++) {
-    for (i = 0; i < rooms[a].players.length; i++) {
-      var curPlayer = rooms[a].players[i];
+
+    for (i = 0; i < rooms[a].data.players.length; i++) {
+      var curPlayer = rooms[a].data.players[i];
       var moveX;
       var moveY;
 
@@ -102,10 +117,38 @@ function updateRooms() {
         moveY = curPlayer.inputY;
       };
 
-      curPlayer.x += moveX;
-      curPlayer.y += moveY;
+      //Normalize move
+      var moveMag = Math.sqrt(moveX * moveX + moveY * moveY);
+      if(moveMag > 1){
+        moveX *= 0.75;
+        moveY *= 0.75;
+      }
+
+      curPlayer.xVel += moveX * 0.2;
+      curPlayer.yVel += moveY * 0.2;
+      curPlayer.update();
     }
-    io.emit("roomUpdate", rooms[a]);
+
+    for(i = 0; i < rooms[a].data.projectiles.length; i++){
+      var curProj = rooms[a].data.projectiles[i];
+      if(curProj){
+        if(curProj.dead == true){
+          rooms[a].removeProjectileByIndex(i);
+        }else{
+          curProj.update();
+        }
+      }
+      //Check for projectile hits
+      /*for (i = 0; i < rooms[a].data.players.length; i++) {
+        if(rooms[a].data.players[i].x > curProj.x - 30 || rooms[a].data.players[i].x < curProj.x + 30 || rooms[a].data.players[i].y > curProj.y - 30 || rooms[a].data.players[i].y < curProj.y + 30){
+          if(i != curProj.playerIndex){
+            console.log("hit");
+          }
+        }
+      }*/
+    }
+
+    io.emit("roomUpdate", rooms[a].data);
   }
 }
 

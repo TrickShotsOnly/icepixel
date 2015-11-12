@@ -11,9 +11,9 @@ canvas {
   bottom: 0;
   left: 0;
   right: 0;
+  cursor: none;
 }
 #start {
-  opacity: 0;
 }
 #title {
   color: #2199ff;
