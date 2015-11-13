@@ -77,8 +77,8 @@ io.on("connection", function(socket) {
 
       socket.on("fire", function(pos){
         //Calculate direction
-        var disX = pos.x - curPlayer.x - 35;
-        var disY = pos.y - curPlayer.y - 35;
+        var disX = pos.x - curPlayer.x;
+        var disY = pos.y - curPlayer.y;
         var mag = Math.sqrt(disX * disX + disY * disY);
         var dirX = disX/mag;
         var dirY = disY/mag;
@@ -109,24 +109,15 @@ function updateRooms() {
       //Prevent cheating
       if (curPlayer.inputX > 1 || curPlayer.inputX < -1) {
         moveX = 0;
-        console.log("Possible cheating");
       } else {
         moveX = curPlayer.inputX;
       };
 
       if (curPlayer.inputY > 1 || curPlayer.inputY < -1) {
         moveY = 0;
-        console.log("Possible cheating");
       } else {
         moveY = curPlayer.inputY;
       };
-
-      //Normalize move
-      var moveMag = Math.sqrt(moveX * moveX + moveY * moveY);
-      if(moveMag > 1){
-        moveX *= 0.75;
-        moveY *= 0.75;
-      }
 
       curPlayer.xVel += moveX * 0.2;
       curPlayer.yVel += moveY * 0.2;
@@ -142,14 +133,6 @@ function updateRooms() {
           curProj.update();
         }
       }
-      //Check for projectile hits
-      /*for (i = 0; i < rooms[a].data.players.length; i++) {
-        if(rooms[a].data.players[i].x > curProj.x - 30 || rooms[a].data.players[i].x < curProj.x + 30 || rooms[a].data.players[i].y > curProj.y - 30 || rooms[a].data.players[i].y < curProj.y + 30){
-          if(i != curProj.playerIndex){
-            console.log("hit");
-          }
-        }
-      }*/
     }
 
     io.emit("roomUpdate", rooms[a].data);

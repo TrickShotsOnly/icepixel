@@ -11,6 +11,9 @@ var mouseX,
   mouseY;
 
 var keypress = {},
+  prevKeypress = {
+    init: 0
+  },
   left = 37,
   up = 38,
   right = 39,
@@ -75,11 +78,11 @@ function notify(message, color) {
 }
 
 function play(id) {
-  socket.emit("requestIndex");
+  /*socket.emit("requestIndex");
   socket.on("index", function(index) {
     playerIndex = index;
     console.log(playerIndex);
-  });
+  });*/
 
   var start = $("#start");
   start.animate({
@@ -113,33 +116,22 @@ function play(id) {
 
   document.addEventListener("keydown", function(evt) {
     keypress[evt.keyCode] = true;
+    inputUpdate();
   });
 
   document.addEventListener("keyup", function(evt) {
     delete keypress[evt.keyCode];
+    inputUpdate();
   })
 
   update();
 
   socket.on("roomUpdate", function(room) {
     curRoom = room;
-    console.log(curRoom);
   });
 }
 
 function update() {
-  var input = {
-    x: 0,
-    y: 0
-  }
-
-  if (keypress[left]) input.x -= 1;
-  if (keypress[right]) input.x += 1;
-  if (keypress[up]) input.y -= 1;
-  if (keypress[down]) input.y += 1;
-
-  socket.emit("inputUpdate", input);
-
   render();
   window.requestAnimationFrame(update);
 }
@@ -153,20 +145,18 @@ function render() {
     for (i = 0; i < curRoom.projectiles.length; i++) {
       ctx.fillStyle = "#2199ff";
       ctx.globalAlpha = (curRoom.projectiles[i].lifeTime - curRoom.projectiles[i].timer) / curRoom.projectiles[i].lifeTime;
-      ctx.fillRect(curRoom.projectiles[i].x, curRoom.projectiles[i].y, 30, 30);
+      ctx.fillRect(curRoom.projectiles[i].x - 10, curRoom.projectiles[i].y - 10, 20, 20);
       ctx.globalAlpha = 1;
     }
     //Players
     for (i = 0; i < curRoom.players.length; i++) {
-      if (curRoom.players[i].index == playerIndex) {
-        ctx.fillStyle = "#27de00";
-        console.log("myPlayer");
-      } else {
-        ctx.fillStyle = "#2199ff";
-      }
-      ctx.fillRect(curRoom.players[i].x - 15, curRoom.players[i].y - 15, 60, 60);
+      ctx.fillStyle = curRoom.players[i].color;
+      ctx.fillRect(curRoom.players[i].x - 20, curRoom.players[i].y - 20, 40, 40);
     }
   }
+
+  ctx.fillRect(mouseX, mouseY, 2, 2);
+
 
   drawCursor();
 }
@@ -189,4 +179,19 @@ function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
   }
+}
+
+function inputUpdate() {
+
+  var input = {
+    x: 0,
+    y: 0
+  }
+
+  if (keypress[left]) input.x -= 1;
+  if (keypress[right]) input.x += 1;
+  if (keypress[up]) input.y -= 1;
+  if (keypress[down]) input.y += 1;
+
+  socket.emit("inputUpdate", input);
 }

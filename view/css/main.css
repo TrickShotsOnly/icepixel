@@ -13,8 +13,7 @@ canvas {
   right: 0;
   cursor: none;
 }
-#start {
-}
+#start {}
 #title {
   color: #2199ff;
   text-shadow: 0 0 6px #2199ff;

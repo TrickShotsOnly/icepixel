@@ -11,6 +11,7 @@
     this.maxVel = 0;
     this.x = 0;
     this.y = 0;
+    this.color = "orange";
     this.update = function() {
       if (this.xVel >= this.maxVel) this.xVel = this.maxVel;
       if (this.xVel <= -this.maxVel) this.xVel = -this.maxVel;
@@ -28,7 +29,7 @@
     this.y = y;
     this.xVel = xVel * 30;
     this.yVel = yVel * 30;
-    this.lifeTime = 30;
+    this.lifeTime = 50;
     this.timer = 0
     this.dead = false;
     this.playerIndex = index;
@@ -40,8 +41,8 @@
       }
       this.x += this.xVel;
       this.y += this.yVel;
-      this.xVel *= 0.96;
-      this.yVel *= 0.96;
+      this.xVel *= 0.97;
+      this.yVel *= 0.97;
     };
   }
 
