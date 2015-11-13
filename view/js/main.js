@@ -17,7 +17,11 @@ var keypress = {},
   left = 37,
   up = 38,
   right = 39,
-  down = 40;
+  down = 40,
+  altLeft = 65,
+  altUp = 87,
+  altRight = 68,
+  altDown = 83;
 
 $(document).ready(function() {
   $("#start").css({
@@ -188,10 +192,10 @@ function inputUpdate() {
     y: 0
   }
 
-  if (keypress[left]) input.x -= 1;
-  if (keypress[right]) input.x += 1;
-  if (keypress[up]) input.y -= 1;
-  if (keypress[down]) input.y += 1;
+  if (keypress[left] || keypress[altLeft]) input.x -= 1;
+  if (keypress[right] || keypress[altRight]) input.x += 1;
+  if (keypress[up] || keypress[altUp]) input.y -= 1;
+  if (keypress[down] || keypress[altDown]) input.y += 1;
 
   socket.emit("inputUpdate", input);
 }

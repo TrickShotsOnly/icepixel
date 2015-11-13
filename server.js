@@ -4,7 +4,7 @@ var app = express();
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
 var bodyParser = require("body-parser");
-var engine = require("./view/js/engine");
+var engine = require("./engine");
 var UUID = require("node-uuid");
 
 var rooms = [];
@@ -76,15 +76,16 @@ io.on("connection", function(socket) {
       });
 
       socket.on("fire", function(pos){
-        //Calculate direction
-        var disX = pos.x - curPlayer.x;
-        var disY = pos.y - curPlayer.y;
-        var mag = Math.sqrt(disX * disX + disY * disY);
-        var dirX = disX/mag;
-        var dirY = disY/mag;
-        console.log("Fire at " + dirX + " : " + dirY);
-
-        var projectileId = rooms[room].spawnProjectile(curPlayer.x, curPlayer.y, dirX, dirY, playerIndex);
+        if(curPlayer.fireTimer > 20){
+          //Calculate direction
+          var disX = pos.x - curPlayer.x;
+          var disY = pos.y - curPlayer.y;
+          var mag = Math.sqrt(disX * disX + disY * disY);
+          var dirX = disX/mag;
+          var dirY = disY/mag;
+          rooms[room].spawnProjectile(curPlayer.x, curPlayer.y, dirX, dirY, playerIndex);
+          curPlayer.fireTimer = 0;
+        }
       });
 
       //Disconnections

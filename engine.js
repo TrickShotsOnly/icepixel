@@ -12,7 +12,9 @@
     this.x = 0;
     this.y = 0;
     this.color = "orange";
+    this.fireTimer = 9000;
     this.update = function() {
+      this.fireTimer ++;
       if (this.xVel >= this.maxVel) this.xVel = this.maxVel;
       if (this.xVel <= -this.maxVel) this.xVel = -this.maxVel;
       if (this.yVel >= this.maxVel) this.yVel = this.maxVel;
