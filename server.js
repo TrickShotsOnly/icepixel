@@ -67,22 +67,21 @@ io.on("connection", function(socket) {
       curPlayer.maxVel = config.players.maxVel;
 
       socket.on("inputUpdate", function(input) {
-        curPlayer.inputX = input.x;
-        curPlayer.inputY = input.y;
+        curPlayer.input = input;
       });
 
-      socket.on("requestIndex", function(){
+      socket.on("requestIndex", function() {
         socket.emit("index", playerIndex);
       });
 
-      socket.on("fire", function(pos){
-        if(curPlayer.fireTimer > 20){
+      socket.on("fire", function(pos) {
+        if (curPlayer.fireTimer > 20) {
           //Calculate direction
           var disX = pos.x - curPlayer.x;
           var disY = pos.y - curPlayer.y;
           var mag = Math.sqrt(disX * disX + disY * disY);
-          var dirX = disX/mag;
-          var dirY = disY/mag;
+          var dirX = disX / mag;
+          var dirY = disY / mag;
           rooms[room].spawnProjectile(curPlayer.x, curPlayer.y, dirX, dirY, playerIndex);
           curPlayer.fireTimer = 0;
         }
@@ -104,33 +103,27 @@ function updateRooms() {
 
     for (i = 0; i < rooms[a].data.players.length; i++) {
       var curPlayer = rooms[a].data.players[i];
-      var moveX;
-      var moveY;
 
-      //Prevent cheating
-      if (curPlayer.inputX > 1 || curPlayer.inputX < -1) {
-        moveX = 0;
-      } else {
-        moveX = curPlayer.inputX;
-      };
+      if (curPlayer.input) {
+        var moveX = 0;
+        var moveY = 0;
+        if (curPlayer.input.left) moveX -= 1;
+        if (curPlayer.input.right) moveX += 1;
+        if (curPlayer.input.up) moveY -= 1;
+        if (curPlayer.input.down) moveY += 1;
 
-      if (curPlayer.inputY > 1 || curPlayer.inputY < -1) {
-        moveY = 0;
-      } else {
-        moveY = curPlayer.inputY;
-      };
-
-      curPlayer.xVel += moveX * 0.2;
-      curPlayer.yVel += moveY * 0.2;
+        curPlayer.xVel += moveX * 0.2;
+        curPlayer.yVel += moveY * 0.2;
+      }
       curPlayer.update();
     }
 
-    for(i = 0; i < rooms[a].data.projectiles.length; i++){
+    for (i = 0; i < rooms[a].data.projectiles.length; i++) {
       var curProj = rooms[a].data.projectiles[i];
-      if(curProj){
-        if(curProj.dead == true){
+      if (curProj) {
+        if (curProj.dead == true) {
           rooms[a].removeProjectileByIndex(i);
-        }else{
+        } else {
           curProj.update();
         }
       }

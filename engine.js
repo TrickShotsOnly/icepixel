@@ -4,8 +4,10 @@
     this.id = id;
     this.index = index;
     this.username = username;
-    this.inputX = 0;
-    this.inputY = 0;
+    this.left = false;
+    this.right = false;
+    this.up = false;
+    this.down = false;
     this.xVel = 0;
     this.yVel = 0;
     this.maxVel = 0;

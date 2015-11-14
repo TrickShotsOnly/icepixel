@@ -188,14 +188,16 @@ function resize() {
 function inputUpdate() {
 
   var input = {
-    x: 0,
-    y: 0
+    left: false,
+    right: false,
+    up: false,
+    down: false
   }
 
-  if (keypress[left] || keypress[altLeft]) input.x -= 1;
-  if (keypress[right] || keypress[altRight]) input.x += 1;
-  if (keypress[up] || keypress[altUp]) input.y -= 1;
-  if (keypress[down] || keypress[altDown]) input.y += 1;
+  if (keypress[left] || keypress[altLeft]) input.left = true;
+  if (keypress[right] || keypress[altRight]) input.right = true;
+  if (keypress[up] || keypress[altUp]) input.up = true;
+  if (keypress[down] || keypress[altDown]) input.down = true;
 
   socket.emit("inputUpdate", input);
 }
