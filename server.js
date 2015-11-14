@@ -4,7 +4,7 @@ var app = express();
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
 var bodyParser = require("body-parser");
-var engine = require("./engine");
+var engine = require("./view/js/engine");
 var UUID = require("node-uuid");
 
 var rooms = [];
@@ -97,13 +97,13 @@ io.on("connection", function(socket) {
 });
 
 setInterval(updateRooms, 15);
+setInterval(sendUpdate, 45);
 
 function updateRooms() {
   for (a = 0; a < rooms.length; a++) {
 
     for (i = 0; i < rooms[a].data.players.length; i++) {
       var curPlayer = rooms[a].data.players[i];
-
       if (curPlayer.input) {
         var moveX = 0;
         var moveY = 0;
@@ -120,17 +120,26 @@ function updateRooms() {
 
     for (i = 0; i < rooms[a].data.projectiles.length; i++) {
       var curProj = rooms[a].data.projectiles[i];
-      if (curProj) {
-        if (curProj.dead == true) {
-          rooms[a].removeProjectileByIndex(i);
-        } else {
-          curProj.update();
+      if (curProj.dead == true) {
+        rooms[a].removeProjectileByIndex(i);
+        return;
+      }
+      curProj.update();
+
+      for (p = 0; p < rooms[a].data.players.length; p++) {
+        if (curProj.x > rooms[a].data.players[p].x - 20 && curProj.x < rooms[a].data.players[p].x + 20 && curProj.y > rooms[a].data.players[p].y - 20 && curProj.y < rooms[a].data.players[p].y + 20) {
+          if (rooms[a].data.players[p].index != curProj.playerIndex) {
+            rooms[a].data.players[p].dead = true;
+            rooms[a].getPlayerById(curProj.playerIndex).score ++;
+          }
         }
       }
     }
-
-    io.emit("roomUpdate", rooms[a].data);
   }
+}
+
+function sendUpdate(){
+  io.emit("roomUpdate", rooms[0].data);
 }
 
 function listConnectedPlayers(state) {

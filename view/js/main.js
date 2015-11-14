@@ -4,6 +4,7 @@ var socket = io();
 var canvas;
 var ctx;
 var curRoom;
+var lastUpdate;
 var playing = false;
 var playerIndex;
 
@@ -82,11 +83,10 @@ function notify(message, color) {
 }
 
 function play(id) {
-  /*socket.emit("requestIndex");
+  socket.emit("requestIndex");
   socket.on("index", function(index) {
     playerIndex = index;
-    console.log(playerIndex);
-  });*/
+  });
 
   var start = $("#start");
   start.animate({
@@ -136,6 +136,20 @@ function play(id) {
 }
 
 function update() {
+  var now = Date.now();
+  var delta = now - lastUpdate;
+  lastUpdate = now;
+  console.log(delta);
+  if (curRoom) {
+    for (i = 0; i < curRoom.players.length; i++) {
+      curRoom.players[i].x += curRoom.players[i].xVel;
+      curRoom.players[i].y += curRoom.players[i].yVel;
+    }
+    for (i = 0; i < curRoom.projectiles.length; i++) {
+      curRoom.projectiles[i].x += curRoom.projectiles[i].xVel;
+      curRoom.projectiles[i].y += curRoom.projectiles[i].yVel;
+    }
+  }
   render();
   window.requestAnimationFrame(update);
 }

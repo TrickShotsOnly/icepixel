@@ -15,16 +15,23 @@
     this.y = 0;
     this.color = "orange";
     this.fireTimer = 9000;
+    this.dead = false;
+    this.score = 0;
     this.update = function() {
-      this.fireTimer ++;
+      this.fireTimer++;
+      if (this.dead) {
+        this.x = 0;
+        this.y = 0;
+        console.log("Player " + username + " died");
+      }
       if (this.xVel >= this.maxVel) this.xVel = this.maxVel;
       if (this.xVel <= -this.maxVel) this.xVel = -this.maxVel;
       if (this.yVel >= this.maxVel) this.yVel = this.maxVel;
       if (this.yVel <= -this.maxVel) this.yVel = -this.maxVel;
       this.x += this.xVel;
       this.y += this.yVel;
-      this.xVel *= 0.96;
-      this.yVel *= 0.96;
+      this.xVel *= 0.95;
+      this.yVel *= 0.95;
     }
   };
 
@@ -38,8 +45,8 @@
     this.dead = false;
     this.playerIndex = index;
     this.update = function() {
-      this.timer ++;
-      if(this.timer >= this.lifeTime){
+      this.timer++;
+      if (this.timer >= this.lifeTime) {
         this.dead = true;
         return;
       }
