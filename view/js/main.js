@@ -6,7 +6,7 @@ var ctx;
 var curRoom;
 var lastUpdate;
 var playing = false;
-var playerIndex;
+var playerIndex = 0;
 
 var camX,
   camY;
@@ -88,11 +88,6 @@ function notify(message, color) {
 }
 
 function play(id) {
-  socket.emit("requestIndex");
-  socket.on("index", function(index) {
-    playerIndex = index;
-  });
-
   var start = $("#start");
   start.animate({
     opacity: 0
@@ -123,9 +118,14 @@ function play(id) {
     socket.emit("fire", pos);
   });
 
-  socket.on("map", function(roomMap){
+  socket.on("map", function(roomMap) {
     map = roomMap;
     console.log(map);
+  });
+
+  socket.emit("requestIndex");
+  socket.on("index", function(index) {
+    playerIndex = index;
   });
 
   document.addEventListener("keydown", function(evt) {
@@ -185,7 +185,7 @@ function render() {
     }
   }
 
-  if(map){
+  if (map) {
     //Draw map
     for (var wall in map.walls) {
       if (map.walls.hasOwnProperty(wall)) {
