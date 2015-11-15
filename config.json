@@ -13,7 +13,13 @@
           "width": 10,
           "height": 1000,
           "color": "white"
-        }
+        },
+	"wall2":{
+	"x":500,
+	"y":0,
+	"width" : 10,
+	"height" : 1000
+	}
       }
     }
   }
