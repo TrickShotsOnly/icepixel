@@ -130,7 +130,6 @@ function updateRooms() {
         if (curProj.x > rooms[a].data.players[p].x - 20 && curProj.x < rooms[a].data.players[p].x + 20 && curProj.y > rooms[a].data.players[p].y - 20 && curProj.y < rooms[a].data.players[p].y + 20) {
           if (rooms[a].data.players[p].index != curProj.playerIndex) {
             rooms[a].data.players[p].dead = true;
-            rooms[a].getPlayerById(curProj.playerIndex).score ++;
           }
         }
       }

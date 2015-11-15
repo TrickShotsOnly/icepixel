@@ -23,6 +23,7 @@
         this.x = 0;
         this.y = 0;
         console.log("Player " + username + " died");
+        this.dead = false;
       }
       if (this.xVel >= this.maxVel) this.xVel = this.maxVel;
       if (this.xVel <= -this.maxVel) this.xVel = -this.maxVel;

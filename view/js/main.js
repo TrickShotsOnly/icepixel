@@ -8,6 +8,9 @@ var lastUpdate;
 var playing = false;
 var playerIndex;
 
+var camX,
+  camY;
+
 var mouseX,
   mouseY;
 
