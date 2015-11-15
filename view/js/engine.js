@@ -20,8 +20,7 @@
     this.update = function() {
       this.fireTimer++;
       if (this.dead) {
-        this.x = 0;
-        this.y = 0;
+        this.spawn();
         console.log("Player " + username + " died");
         this.dead = false;
       }
@@ -33,6 +32,12 @@
       this.y += this.yVel;
       this.xVel *= 0.95;
       this.yVel *= 0.95;
+    }
+    this.spawn = function() {
+      this.x = 0;
+      this.y = 0;
+      this.xVel = 8 * Math.random();
+      this.yVel = 8 * Math.random();
     }
   };
 
@@ -58,14 +63,26 @@
     };
   }
 
+  exports.Wall = function(x, y, width, height, color) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.color = color;
+  }
+
   exports.Room = function() {
     this.data = {
       players: [],
       projectiles: []
     };
+    this.map = {
+      walls: []
+    }
     this.addPlayer = function(id, username, index) {
       player = new exports.Player(id, username, this.data.players.length);
       this.data.players.push(player);
+      player.spawn();
       return this.data.players.indexOf(player);
     };
     this.spawnProjectile = function(x, y, xVel, yVel, playerIndex) {
@@ -98,7 +115,7 @@
       if (!this.data.players[index]) return -1;
       this.data.players.splice(i, 1);
     };
-    this.getProjectileByInde = function(index) {
+    this.getProjectileByIndex = function(index) {
       if (!this.data.projectiles[index]) return -1;
       return this.data.projectiles[index];
     }
@@ -106,6 +123,19 @@
       if (!this.data.projectiles[index]) return -1;
       this.data.projectiles.splice(i, 1);
     };
+    this.loadMap = function(map) {
+      for (var wall in map.walls) {
+        if (map.walls.hasOwnProperty(wall)) {
+          this.addWall(map.walls[wall].x, map.walls[wall].y, map.walls[wall].width, map.walls[wall].height, map.walls[wall].color);
+        }
+      }
+      console.log(this.map.walls);
+    }
+    this.addWall = function(x, y, width, height, color) {
+      wall = new exports.Wall(x, y, width, height, color);
+      this.map.walls.push(wall);
+      console.log(x + " " + y + " " + width + " " + height);
+    }
   };
 
 })(typeof exports === "undefined" ? this["engine"] = {} : exports);

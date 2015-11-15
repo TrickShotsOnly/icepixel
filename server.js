@@ -74,6 +74,8 @@ io.on("connection", function(socket) {
         socket.emit("index", playerIndex);
       });
 
+      socket.emit("map", rooms[room].map);
+
       socket.on("fire", function(pos) {
         if (curPlayer.fireTimer > 20) {
           //Calculate direction
@@ -116,6 +118,17 @@ function updateRooms() {
         curPlayer.yVel += moveY * 0.2;
       }
       curPlayer.update();
+      /*for (var wall in rooms[a].map.walls) {
+        if (rooms[a].map.walls.hasOwnProperty(wall)) {
+          if (curPlayer.x < (rooms[a].map.walls[wall].x + rooms[a].map.walls[wall].width / 2) &&
+            curPlayer.x > (rooms[a].map.walls[wall].x - rooms[a].map.walls[wall].width / 2) &&
+            curPlayer.y < (rooms[a].map.walls[wall].y + rooms[a].map.walls[wall].height / 2) &&
+            curPlayer.y > (rooms[a].map.walls[wall].y - rooms[a].map.walls[wall].height / 2)
+          ){
+            console.log("collision");
+          }
+        }
+      }*/
     }
 
     for (i = 0; i < rooms[a].data.projectiles.length; i++) {
@@ -137,7 +150,7 @@ function updateRooms() {
   }
 }
 
-function sendUpdate(){
+function sendUpdate() {
   io.emit("roomUpdate", rooms[0].data);
 }
 
@@ -150,4 +163,5 @@ function addRoom() {
   var room = new engine.Room();
   console.log("Added room number " + rooms.length);
   rooms.push(room);
+  room.loadMap(config.maps.main);
 }

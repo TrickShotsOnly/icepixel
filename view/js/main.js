@@ -14,6 +14,8 @@ var camX,
 var mouseX,
   mouseY;
 
+var map;
+
 var keypress = {},
   prevKeypress = {
     init: 0
@@ -115,10 +117,15 @@ function play(id) {
 
   canvas.addEventListener("click", function(evt) {
     var pos = {
-      x: mouseX,
-      y: mouseY
+      x: mouseX + camX,
+      y: mouseY + camY
     }
     socket.emit("fire", pos);
+  });
+
+  socket.on("map", function(roomMap){
+    map = roomMap;
+    console.log(map);
   });
 
   document.addEventListener("keydown", function(evt) {
@@ -142,7 +149,7 @@ function update() {
   var now = Date.now();
   var delta = now - lastUpdate;
   lastUpdate = now;
-  console.log(delta);
+  //console.log(delta);
   if (curRoom) {
     for (i = 0; i < curRoom.players.length; i++) {
       curRoom.players[i].x += curRoom.players[i].xVel;
@@ -152,6 +159,8 @@ function update() {
       curRoom.projectiles[i].x += curRoom.projectiles[i].xVel;
       curRoom.projectiles[i].y += curRoom.projectiles[i].yVel;
     }
+    camX = curRoom.players[playerIndex].x - canvas.width / 2 + 20;
+    camY = curRoom.players[playerIndex].y - canvas.height / 2 + 20;
   }
   render();
   window.requestAnimationFrame(update);
@@ -166,19 +175,25 @@ function render() {
     for (i = 0; i < curRoom.projectiles.length; i++) {
       ctx.fillStyle = "#2199ff";
       ctx.globalAlpha = (curRoom.projectiles[i].lifeTime - curRoom.projectiles[i].timer) / curRoom.projectiles[i].lifeTime;
-      ctx.fillRect(curRoom.projectiles[i].x - 10, curRoom.projectiles[i].y - 10, 20, 20);
+      ctx.fillRect(curRoom.projectiles[i].x - 10 - camX, curRoom.projectiles[i].y - 10 - camY, 20, 20);
       ctx.globalAlpha = 1;
     }
     //Players
     for (i = 0; i < curRoom.players.length; i++) {
       ctx.fillStyle = curRoom.players[i].color;
-      ctx.fillRect(curRoom.players[i].x - 20, curRoom.players[i].y - 20, 40, 40);
+      ctx.fillRect(curRoom.players[i].x - 20 - camX, curRoom.players[i].y - 20 - camY, 40, 40);
     }
   }
 
-  ctx.fillRect(mouseX, mouseY, 2, 2);
-
-
+  if(map){
+    //Draw map
+    for (var wall in map.walls) {
+      if (map.walls.hasOwnProperty(wall)) {
+        ctx.fillStyle = map.walls[wall].color;
+        ctx.fillRect(map.walls[wall].x - camX, map.walls[wall].y - camY, map.walls[wall].width, map.walls[wall].height);
+      }
+    }
+  }
   drawCursor();
 }
 
