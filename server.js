@@ -29,6 +29,7 @@ app.get("/getroomdata", function(req, res) {
 
 for (i = 0; i < config.numRooms; i++) {
   addRoom();
+  addRoom();
 }
 
 //Run server
