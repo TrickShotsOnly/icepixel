@@ -118,17 +118,35 @@ function updateRooms() {
         curPlayer.xVel += moveX * 0.2;
         curPlayer.yVel += moveY * 0.2;
       }
-      curPlayer.update();
-      /*for (var wall in rooms[a].map.walls) {
+      for (var wall in rooms[a].map.walls) {
         if (rooms[a].map.walls.hasOwnProperty(wall)) {
           var wall = rooms[a].map.walls[wall];
-          if (curPlayer.x - (curPlayer.width / 2) < wall.x + (wall.width / 2) && curPlayer.x + (curPlayer.width / 2) > wall.x - (wall.width / 2) &&
-            curPlayer.y - (curPlayer.height / 2) < wall.y + (wall.height) && curPlayer.y + (curPlayer.height / 2) > wall.y - (wall.height)
+          if (curPlayer.x - (curPlayer.width / 2) < wall.x + (wall.width) && curPlayer.x + (curPlayer.width / 2) > wall.x &&
+            curPlayer.y - (curPlayer.height / 2) < wall.y + (wall.height) && curPlayer.y + (curPlayer.height / 2) > wall.y
           ) {
-            console.log("collision" + Math.random());
+            if (Math.abs(curPlayer.x - wall.x) > Math.abs(curPlayer.y - wall.y)) {
+              console.log("Up");
+              if (curPlayer.y - wall.y < 0) {
+                curPlayer.yVel = -0.1;
+              } else if (curPlayer.y - wall.y > 0) {
+
+                curPlayer.yVel = 0.1;
+              }
+            }
+            if (Math.abs(curPlayer.x - wall.x) < Math.abs(curPlayer.y - wall.y)) {
+              console.log("Side");
+              if (curPlayer.x - wall.x < 0) {
+                curPlayer.xVel = -0.1;
+              } else if (curPlayer.x - wall.x > 0) {
+
+                curPlayer.xVel = 0.1;
+              }
+            }
           }
         }
-      }*/
+
+        curPlayer.update();
+      }
     }
 
     for (i = 0; i < rooms[a].data.projectiles.length; i++) {
@@ -142,7 +160,7 @@ function updateRooms() {
       for (p = 0; p < rooms[a].data.players.length; p++) {
         if (curProj.x > rooms[a].data.players[p].x - (rooms[a].data.players[p].width / 2) && curProj.x < rooms[a].data.players[p].x + (rooms[a].data.players[p].width / 2) && curProj.y > rooms[a].data.players[p].y - (rooms[a].data.players[p].height / 2) && curProj.y < rooms[a].data.players[p].y + (rooms[a].data.players[p].height / 2)) {
           if (rooms[a].data.players[p].index != curProj.playerIndex) {
-            rooms[a].getPlayerByIndex(curProj.playerId).score ++;
+            rooms[a].getPlayerByIndex(curProj.playerId).score++;
             rooms[a].data.players[p].dead = true;
           }
         }

@@ -34,6 +34,12 @@
           "width": 800,
           "height": 5,
           "color": "2199ff"
+        },
+        "rect":{
+          "x":400,
+          "y":500,
+          "width":100,
+          "height":100
         }
       }
     }
