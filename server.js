@@ -99,7 +99,7 @@ io.on("connection", function(socket) {
 });
 
 setInterval(updateRooms, 15);
-setInterval(sendUpdate, 45);
+setInterval(sendUpdate, 30);
 
 function updateRooms() {
   for (a = 0; a < rooms.length; a++) {
