@@ -17,6 +17,8 @@
     this.fireTimer = 9000;
     this.dead = false;
     this.score = 0;
+    this.width = 60;
+    this.height = 60;
     this.update = function() {
       this.fireTimer++;
       if (this.dead) {
@@ -134,7 +136,6 @@
     this.addWall = function(x, y, width, height, color) {
       wall = new exports.Wall(x, y, width, height, color);
       this.map.walls.push(wall);
-      console.log(x + " " + y + " " + width + " " + height);
     }
   };
 

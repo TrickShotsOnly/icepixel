@@ -181,7 +181,7 @@ function render() {
     //Players
     for (i = 0; i < curRoom.players.length; i++) {
       ctx.fillStyle = curRoom.players[i].color;
-      ctx.fillRect(curRoom.players[i].x - 20 - camX, curRoom.players[i].y - 20 - camY, 40, 40);
+      ctx.fillRect(curRoom.players[i].x - (curRoom.players[i].width/2) - camX, curRoom.players[i].y - (curRoom.players[i].width/2) - camY, curRoom.players[i].width, curRoom.players[i].height);
     }
   }
 

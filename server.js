@@ -120,12 +120,11 @@ function updateRooms() {
       curPlayer.update();
       /*for (var wall in rooms[a].map.walls) {
         if (rooms[a].map.walls.hasOwnProperty(wall)) {
-          if (curPlayer.x < (rooms[a].map.walls[wall].x + rooms[a].map.walls[wall].width / 2) &&
-            curPlayer.x > (rooms[a].map.walls[wall].x - rooms[a].map.walls[wall].width / 2) &&
-            curPlayer.y < (rooms[a].map.walls[wall].y + rooms[a].map.walls[wall].height / 2) &&
-            curPlayer.y > (rooms[a].map.walls[wall].y - rooms[a].map.walls[wall].height / 2)
-          ){
-            console.log("collision");
+          var wall = rooms[a].map.walls[wall];
+          if (curPlayer.x - (curPlayer.width / 2) < wall.x + (wall.width / 2) && curPlayer.x + (curPlayer.width / 2) > wall.x - (wall.width / 2) &&
+            curPlayer.y - (curPlayer.height / 2) < wall.y + (wall.height) && curPlayer.y + (curPlayer.height / 2) > wall.y - (wall.height)
+          ) {
+            console.log("collision" + Math.random());
           }
         }
       }*/
@@ -140,7 +139,7 @@ function updateRooms() {
       curProj.update();
 
       for (p = 0; p < rooms[a].data.players.length; p++) {
-        if (curProj.x > rooms[a].data.players[p].x - 20 && curProj.x < rooms[a].data.players[p].x + 20 && curProj.y > rooms[a].data.players[p].y - 20 && curProj.y < rooms[a].data.players[p].y + 20) {
+        if (curProj.x > rooms[a].data.players[p].x - (rooms[a].data.players[p].width / 2) && curProj.x < rooms[a].data.players[p].x + (rooms[a].data.players[p].width / 2) && curProj.y > rooms[a].data.players[p].y - (rooms[a].data.players[p].height / 2) && curProj.y < rooms[a].data.players[p].y + (rooms[a].data.players[p].height / 2)) {
           if (rooms[a].data.players[p].index != curProj.playerIndex) {
             rooms[a].data.players[p].dead = true;
           }
@@ -152,11 +151,6 @@ function updateRooms() {
 
 function sendUpdate() {
   io.emit("roomUpdate", rooms[0].data);
-}
-
-function listConnectedPlayers(state) {
-  console.log("Connected players:");
-  console.log(rooms[state].players);
 }
 
 function addRoom() {
