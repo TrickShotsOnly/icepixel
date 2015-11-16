@@ -7,12 +7,40 @@
   "maps": {
     "main": {
       "walls": {
-        "leftBound": {
+        "wall-0": {
           "x": 0,
           "y": 0,
-          "width": 10,
+          "width": 5,
           "height": 1000,
-          "color": "white"
+          "color": "2199ff"
+        },
+        "wall-1": {
+          "x": 800,
+          "y": 0,
+          "width": 5,
+          "height": 1000,
+          "color": "2199ff"
+        },
+        "wall-2": {
+          "x": 0,
+          "y": -1000,
+          "width": 800,
+          "height": 5,
+          "color": "2199ff"
+        },
+        "wall-3": {
+          "x": 0,
+          "y": 0,
+          "width": 800,
+          "height": 5,
+          "color": "2199ff"
+        },
+        "wall-4":{
+          "x":50,
+          "y":50,
+          "width":20,
+          "height":20,
+          "color": "2199ff"
         }
       }
     }

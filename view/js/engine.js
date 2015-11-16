@@ -17,8 +17,8 @@
     this.fireTimer = 9000;
     this.dead = false;
     this.score = 0;
-    this.width = 60;
-    this.height = 60;
+    this.width = 30;
+    this.height = 30;
     this.update = function() {
       this.fireTimer++;
       if (this.dead) {
