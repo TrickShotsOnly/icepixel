@@ -34,13 +34,6 @@
           "width": 800,
           "height": 5,
           "color": "2199ff"
-        },
-        "wall-4":{
-          "x":50,
-          "y":50,
-          "width":20,
-          "height":20,
-          "color": "2199ff"
         }
       }
     }

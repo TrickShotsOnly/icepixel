@@ -141,6 +141,7 @@ function updateRooms() {
       for (p = 0; p < rooms[a].data.players.length; p++) {
         if (curProj.x > rooms[a].data.players[p].x - (rooms[a].data.players[p].width / 2) && curProj.x < rooms[a].data.players[p].x + (rooms[a].data.players[p].width / 2) && curProj.y > rooms[a].data.players[p].y - (rooms[a].data.players[p].height / 2) && curProj.y < rooms[a].data.players[p].y + (rooms[a].data.players[p].height / 2)) {
           if (rooms[a].data.players[p].index != curProj.playerIndex) {
+            rooms[a].getPlayerByIndex(curProj.playerId).score ++;
             rooms[a].data.players[p].dead = true;
           }
         }

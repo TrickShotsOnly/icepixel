@@ -182,6 +182,9 @@ function render() {
     for (i = 0; i < curRoom.players.length; i++) {
       ctx.fillStyle = curRoom.players[i].color;
       ctx.fillRect(curRoom.players[i].x - (curRoom.players[i].width/2) - camX, curRoom.players[i].y - (curRoom.players[i].width/2) - camY, curRoom.players[i].width, curRoom.players[i].height);
+      ctx.font = "20px Play";
+      ctx.textAlign = "center";
+      ctx.fillText(curRoom.players[i].score, curRoom.players[i].x - camX, curRoom.players[i].y + curRoom.players[i].height - camY + 10);
     }
   }
 

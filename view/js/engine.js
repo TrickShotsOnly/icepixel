@@ -36,14 +36,14 @@
       this.yVel *= 0.95;
     }
     this.spawn = function() {
-      this.x = 0;
-      this.y = 0;
+      this.x = 500 * Math.random();
+      this.y = 1000 * Math.random();
       this.xVel = 8 * Math.random();
       this.yVel = 8 * Math.random();
     }
   };
 
-  exports.Projectile = function(x, y, xVel, yVel, index) {
+  exports.Projectile = function(x, y, xVel, yVel, id) {
     this.x = x;
     this.y = y;
     this.xVel = xVel * 30;
@@ -51,7 +51,7 @@
     this.lifeTime = 50;
     this.timer = 0
     this.dead = false;
-    this.playerIndex = index;
+    this.playerId = id;
     this.update = function() {
       this.timer++;
       if (this.timer >= this.lifeTime) {
@@ -87,8 +87,8 @@
       player.spawn();
       return this.data.players.indexOf(player);
     };
-    this.spawnProjectile = function(x, y, xVel, yVel, playerIndex) {
-      projectile = new exports.Projectile(x, y, xVel, yVel, playerIndex);
+    this.spawnProjectile = function(x, y, xVel, yVel, id) {
+      projectile = new exports.Projectile(x, y, xVel, yVel, id);
       this.data.projectiles.push(projectile);
       return this.data.projectiles.indexOf(projectile);
     };
