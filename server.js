@@ -4,7 +4,7 @@ var app = express();
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
 var bodyParser = require("body-parser");
-var engine = require("./view/js/engine");
+var engine = require("./engine");
 var UUID = require("node-uuid");
 
 var rooms = [];
@@ -17,20 +17,18 @@ var config = JSON.parse(configFile);
 //Routing
 
 app.use("/", express.static("view"));
+app.use("/admin", express.static("admin"));
 app.use(bodyParser.urlencoded({
   extended: false
 }));
 
-app.get("/getroomdata", function(req, res) {
-  res.json(rooms.length);
-})
-
-//Add rooms set in config
-
-for (i = 0; i < config.numRooms; i++) {
-  addRoom();
-  addRoom();
+//Add a room
+var room0 = new engine.Room();
+rooms.push(room0);
+if (cubicMap = JSON.parse(fs.readFileSync("maps/cubic.json"))) {
+  console.log("Loaded map");
 }
+room0.loadMap(cubicMap);
 
 //Run server
 http.listen(config.port, function() {
@@ -43,6 +41,26 @@ io.on("connection", function(socket) {
   var id = UUID();
   var username;
   var connected;
+  socket.emit("numRooms", rooms.length);
+  socket.on("numRoomsRequest", function() {
+    console.log("adminRoomsRequest");
+    socket.emit("numRooms", rooms.length);
+  });
+  socket.on("adminLogin", function(password) {
+    if (password == config.adminPassword) {
+      console.log("Admin logged in");
+      socket.emit("adminSuccess", 0);
+      socket.on("kick", function(id, room) {
+        rooms[room].removePlayerById(id);
+      });
+      socket.on("adminGetPlayersInRoom", function(room) {
+        socket.emit("adminReturnPlayersInRoom", rooms[room].data.players);
+      });
+    } else {
+      console.log("Admin login attempt failed, password " + password);
+      socket.emit("adminFailed", 0);
+    }
+  });
   socket.on("joinRoom", function(room) {
     if (rooms[room]) {
       socket.emit("joinRoomResponse", 0);
@@ -118,31 +136,12 @@ function updateRooms() {
         curPlayer.xVel += moveX * 0.2;
         curPlayer.yVel += moveY * 0.2;
       }
-      for (var wall in rooms[a].map.walls) {
-        if (rooms[a].map.walls.hasOwnProperty(wall)) {
-          var wall = rooms[a].map.walls[wall];
+      for (var i = 0; i < rooms[a].map.walls.length; i++) {
+        if (rooms[a].map.walls.hasOwnProperty(i)) {
+          var wall = rooms[a].map.walls[i];
           if (curPlayer.x - (curPlayer.width / 2) < wall.x + (wall.width) && curPlayer.x + (curPlayer.width / 2) > wall.x &&
             curPlayer.y - (curPlayer.height / 2) < wall.y + (wall.height) && curPlayer.y + (curPlayer.height / 2) > wall.y
-          ) {
-            if (Math.abs(curPlayer.x - wall.x) > Math.abs(curPlayer.y - wall.y)) {
-              console.log("Up");
-              if (curPlayer.y - wall.y < 0) {
-                curPlayer.yVel = -0.1;
-              } else if (curPlayer.y - wall.y > 0) {
-
-                curPlayer.yVel = 0.1;
-              }
-            }
-            if (Math.abs(curPlayer.x - wall.x) < Math.abs(curPlayer.y - wall.y)) {
-              console.log("Side");
-              if (curPlayer.x - wall.x < 0) {
-                curPlayer.xVel = -0.1;
-              } else if (curPlayer.x - wall.x > 0) {
-
-                curPlayer.xVel = 0.1;
-              }
-            }
-          }
+          ) {}
         }
 
         curPlayer.update();
@@ -171,11 +170,4 @@ function updateRooms() {
 
 function sendUpdate() {
   io.emit("roomUpdate", rooms[0].data);
-}
-
-function addRoom() {
-  var room = new engine.Room();
-  console.log("Added room number " + rooms.length);
-  rooms.push(room);
-  room.loadMap(config.maps.main);
 }

@@ -37,7 +37,7 @@ $(document).ready(function() {
     opacity: 1
   }, 200);
 
-  $.get("getroomdata", function(data) {
+  socket.on("numRooms", function(data){
     for (i = 0; i < data; i++) {
       $("#s").append('<option value="' + i + '">Room ' + i + '</option>');
     }
@@ -120,7 +120,6 @@ function play(id) {
 
   socket.on("map", function(roomMap) {
     map = roomMap;
-    console.log(map);
   });
 
   socket.emit("requestIndex");
@@ -181,7 +180,7 @@ function render() {
     //Players
     for (i = 0; i < curRoom.players.length; i++) {
       ctx.fillStyle = curRoom.players[i].color;
-      ctx.fillRect(curRoom.players[i].x - (curRoom.players[i].width/2) - camX, curRoom.players[i].y - (curRoom.players[i].width/2) - camY, curRoom.players[i].width, curRoom.players[i].height);
+      ctx.fillRect(curRoom.players[i].x - (curRoom.players[i].width / 2) - camX, curRoom.players[i].y - (curRoom.players[i].width / 2) - camY, curRoom.players[i].width, curRoom.players[i].height);
       ctx.font = "20px Play";
       ctx.textAlign = "center";
       ctx.fillText(curRoom.players[i].username + " : " + curRoom.players[i].score, curRoom.players[i].x - camX, curRoom.players[i].y + curRoom.players[i].height - camY + 10);
@@ -190,10 +189,15 @@ function render() {
 
   if (map) {
     //Draw map
-    for (var wall in map.walls) {
-      if (map.walls.hasOwnProperty(wall)) {
-        ctx.fillStyle = map.walls[wall].color;
-        ctx.fillRect(map.walls[wall].x - camX, map.walls[wall].y - camY, map.walls[wall].width, map.walls[wall].height);
+    for (var i = 0; i < map.walls.length; i++) {
+      if (map.walls.hasOwnProperty(i)) {
+        ctx.beginPath();
+        ctx.moveTo(map.walls[i].x0 - camX, map.walls[i].y0 - camY);
+        ctx.lineTo(map.walls[i].x1 - camX, map.walls[i].y1 - camY);
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = map.walls[i].color;
+        ctx.stroke();
+        ctx.fill();
       }
     }
   }

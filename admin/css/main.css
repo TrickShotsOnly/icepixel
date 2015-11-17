@@ -3,15 +3,6 @@ body {
   text-align: center;
   font-family: 'Play', sans-serif;
 }
-canvas{
-  margin:0;
-  position:absolute;
-  top:0;
-  bottom:0;
-  left:0;
-  right:0;
-  cursor: none;
-}
 #title {
   color: #2199ff;
   text-shadow: 0 0 6px #2199ff;
@@ -19,9 +10,12 @@ canvas{
   margin: 0;
   padding: 10px;
 }
-#about {
+h3{
   color: #2199ff;
-  text-decoration: none;
+  text-shadow: 0 0 6px #2199ff;
+  font-size: 2em;
+  margin: 0;
+  padding: 10px;
 }
 #description {
   font-family: 'Play', sans-serif;
@@ -44,7 +38,7 @@ select, input {
 #m-separator {
   height: 10px;
 }
-#j {
+.submit {
   background-color: #2199ff;
   border: 0;
   font-size: 2em;
