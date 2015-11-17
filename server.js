@@ -46,7 +46,7 @@ io.on("connection", function(socket) {
     console.log("adminRoomsRequest");
     socket.emit("numRooms", rooms.length);
   });
-  /*socket.on("adminLogin", function(password) {
+  socket.on("adminLogin", function(password) {
     if (password == config.adminPassword) {
       console.log("Admin logged in");
       socket.emit("adminSuccess", 0);
@@ -60,7 +60,7 @@ io.on("connection", function(socket) {
       console.log("Admin login attempt failed, password " + password);
       socket.emit("adminFailed", 0);
     }
-  });*/
+  });
   socket.on("joinRoom", function(room) {
     if (rooms[room]) {
       socket.emit("joinRoomResponse", 0);
