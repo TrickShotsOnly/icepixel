@@ -46,7 +46,7 @@ io.on("connection", function(socket) {
     console.log("adminRoomsRequest");
     socket.emit("numRooms", rooms.length);
   });
-  socket.on("adminLogin", function(password) {
+  /*socket.on("adminLogin", function(password) {
     if (password == config.adminPassword) {
       console.log("Admin logged in");
       socket.emit("adminSuccess", 0);
@@ -60,7 +60,7 @@ io.on("connection", function(socket) {
       console.log("Admin login attempt failed, password " + password);
       socket.emit("adminFailed", 0);
     }
-  });
+  });*/
   socket.on("joinRoom", function(room) {
     if (rooms[room]) {
       socket.emit("joinRoomResponse", 0);
@@ -136,16 +136,16 @@ function updateRooms() {
         curPlayer.xVel += moveX * 0.2;
         curPlayer.yVel += moveY * 0.2;
       }
-      for (var i = 0; i < rooms[a].map.walls.length; i++) {
+      /*for (var i = 0; i < rooms[a].map.walls.length; i++) {
         if (rooms[a].map.walls.hasOwnProperty(i)) {
           var wall = rooms[a].map.walls[i];
           if (curPlayer.x - (curPlayer.width / 2) < wall.x + (wall.width) && curPlayer.x + (curPlayer.width / 2) > wall.x &&
             curPlayer.y - (curPlayer.height / 2) < wall.y + (wall.height) && curPlayer.y + (curPlayer.height / 2) > wall.y
           ) {}
         }
+      }*/
 
-        curPlayer.update();
-      }
+      curPlayer.update();
     }
 
     for (i = 0; i < rooms[a].data.projectiles.length; i++) {
