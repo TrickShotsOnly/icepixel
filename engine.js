@@ -1,75 +1,93 @@
 (function(exports) {
 
-  exports.Player = function(id, username, index) {
+  exports.Vec2 = function(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  exports.Shape = function(vertices) {
+    this.vertices = vertices;
+  }
+
+  exports.Player = function(id, username) {
+    //Identification
     this.id = id;
-    this.index = index;
     this.username = username;
+
+    //Shape
+    var vertices = [
+      new exports.Vec2(20, 20),
+      new exports.Vec2(-20, 20),
+      new exports.Vec2(-20, -20),
+      new exports.Vec2(20, -20)
+    ];
+    this.shape = new exports.Shape(vertices);
+
+    this.width = 40;
+    this.height = 40;
+
+    //Position and velocity
+    this.vel = new exports.Vec2(0, 0);
+    this.maxVel = 0;
+    this.pos = new exports.Vec2(0, 0);
+
+    //Input variables
     this.left = false;
     this.right = false;
     this.up = false;
     this.down = false;
-    this.xVel = 0;
-    this.yVel = 0;
-    this.maxVel = 0;
-    this.x = 0;
-    this.y = 0;
+
     this.color = "orange";
-    this.fireTimer = 9000;
+    this.fireTimer = 0;
     this.dead = false;
     this.score = 0;
-    this.width = 30;
-    this.height = 30;
+
     this.update = function() {
       this.fireTimer++;
-      if (this.dead) {
-        this.spawn();
-        console.log("Player " + username + " died");
-        this.dead = false;
-      }
-      if (this.xVel >= this.maxVel) this.xVel = this.maxVel;
-      if (this.xVel <= -this.maxVel) this.xVel = -this.maxVel;
-      if (this.yVel >= this.maxVel) this.yVel = this.maxVel;
-      if (this.yVel <= -this.maxVel) this.yVel = -this.maxVel;
-      this.x += this.xVel;
-      this.y += this.yVel;
-      this.xVel *= 0.95;
-      this.yVel *= 0.95;
+
+      if (this.vel.x >= this.maxVel) this.vel.x = this.maxVel;
+      if (this.vel.x <= -this.maxVel) this.vel.x = -this.maxVel;
+      if (this.vel.y >= this.maxVel) this.vel.y = this.maxVel;
+      if (this.vel.y <= -this.maxVel) this.vel.y = -this.maxVel;
+
+      this.vel.x *= 0.95;
+      this.vel.y *= 0.95;
+
+      this.pos.x += this.vel.x;
+      this.pos.y += this.vel.y;
     }
-    this.spawn = function() {
-      this.x = 1000 * Math.random();
-      this.y = 1000 * Math.random();
-      this.xVel = 8 * Math.random();
-      this.yVel = 8 * Math.random();
+
+    this.spawn = function(pos, vel) {
+      this.pos = pos;
+      this.vel = vel;
     }
   };
 
-  exports.Projectile = function(x, y, xVel, yVel, id) {
-    this.x = x;
-    this.y = y;
-    this.xVel = xVel * 30;
-    this.yVel = yVel * 30;
+  exports.Projectile = function(pos, vel, id) {
+    this.pos = pos;
+    this.vel = new exports.Vec2(vel.x * 30, vel.y * 30);
     this.lifeTime = 50;
     this.timer = 0
     this.dead = false;
-    this.playerId = id;
+    this.id = id;
+
     this.update = function() {
       this.timer++;
       if (this.timer >= this.lifeTime) {
         this.dead = true;
         return;
       }
-      this.x += this.xVel;
-      this.y += this.yVel;
-      this.xVel *= 0.97;
-      this.yVel *= 0.97;
+      this.vel.x *= 0.97;
+      this.vel.y *= 0.97;
+
+      this.pos.x += this.vel.x;
+      this.pos.y += this.vel.y;
     };
   }
 
-  exports.Wall = function(x0, y0, x1, y1, color) {
-    this.x0 = x0;
-    this.y0 = y0;
-    this.x1 = x1;
-    this.y1 = y1;
+  exports.Wall = function(pos1, pos2, color) {
+    this.pos1 = pos1;
+    this.pos2 = pos2;
     this.color = color;
   }
 
@@ -81,14 +99,13 @@
     this.map = {
       walls: []
     }
-    this.addPlayer = function(id, username, index) {
-      player = new exports.Player(id, username, this.data.players.length);
+    this.addPlayer = function(id, username) {
+      player = new exports.Player(id, username);
       this.data.players.push(player);
-      player.spawn();
       return this.data.players.indexOf(player);
     };
-    this.spawnProjectile = function(x, y, xVel, yVel, id) {
-      projectile = new exports.Projectile(x, y, xVel, yVel, id);
+    this.spawnProjectile = function(pos, vel, id) {
+      projectile = new exports.Projectile(pos, vel, id);
       this.data.projectiles.push(projectile);
       return this.data.projectiles.indexOf(projectile);
     };
@@ -126,16 +143,12 @@
       this.data.projectiles.splice(index, 1);
     };
     this.loadMap = function(map) {
+      console.log("Loading map " + map.name);
       for (var wall in map.walls) {
-        if (map.walls.hasOwnProperty(wall)) {
-          this.addWall(map.walls[wall].x0, map.walls[wall].y0, map.walls[wall].x1, map.walls[wall].y1, map.walls[wall].color);
-        }
+        wall = new exports.Wall(new exports.Vec2(map.walls[wall].x1, map.walls[wall].y1), new exports.Vec2(map.walls[wall].x2, map.walls[wall].y2), map.walls[wall].color);
+        this.map.walls.push(wall);
       }
       console.log(this.map.walls);
-    }
-    this.addWall = function(x, y, width, height, color) {
-      wall = new exports.Wall(x, y, width, height, color);
-      this.map.walls.push(wall);
     }
   };
 

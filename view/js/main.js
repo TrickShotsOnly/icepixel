@@ -151,15 +151,15 @@ function update() {
   //console.log(delta);
   if (curRoom) {
     for (i = 0; i < curRoom.players.length; i++) {
-      curRoom.players[i].x += curRoom.players[i].xVel;
-      curRoom.players[i].y += curRoom.players[i].yVel;
+      curRoom.players[i].pos.x += curRoom.players[i].vel.x;
+      curRoom.players[i].pos.y += curRoom.players[i].vel.y;
     }
     for (i = 0; i < curRoom.projectiles.length; i++) {
-      curRoom.projectiles[i].x += curRoom.projectiles[i].xVel;
-      curRoom.projectiles[i].y += curRoom.projectiles[i].yVel;
+      curRoom.projectiles[i].pos.x += curRoom.projectiles[i].vel.x;
+      curRoom.projectiles[i].pos.y += curRoom.projectiles[i].vel.y;
     }
-    camX = curRoom.players[playerIndex].x - canvas.width / 2 + 20;
-    camY = curRoom.players[playerIndex].y - canvas.height / 2 + 20;
+    camX = curRoom.players[playerIndex].pos.x - canvas.width / 2 + 20;
+    camY = curRoom.players[playerIndex].pos.y - canvas.height / 2 + 20;
   }
   render();
   window.requestAnimationFrame(update);
@@ -174,16 +174,16 @@ function render() {
     for (i = 0; i < curRoom.projectiles.length; i++) {
       ctx.fillStyle = "#2199ff";
       ctx.globalAlpha = (curRoom.projectiles[i].lifeTime - curRoom.projectiles[i].timer) / curRoom.projectiles[i].lifeTime;
-      ctx.fillRect(curRoom.projectiles[i].x - 10 - camX, curRoom.projectiles[i].y - 10 - camY, 20, 20);
+      ctx.fillRect(curRoom.projectiles[i].pos.x - 10 - camX, curRoom.projectiles[i].pos.y - 10 - camY, 20, 20);
       ctx.globalAlpha = 1;
     }
     //Players
     for (i = 0; i < curRoom.players.length; i++) {
       ctx.fillStyle = curRoom.players[i].color;
-      ctx.fillRect(curRoom.players[i].x - (curRoom.players[i].width / 2) - camX, curRoom.players[i].y - (curRoom.players[i].width / 2) - camY, curRoom.players[i].width, curRoom.players[i].height);
+      ctx.fillRect(curRoom.players[i].pos.x - (curRoom.players[i].width / 2) - camX, curRoom.players[i].pos.y - (curRoom.players[i].width / 2) - camY, curRoom.players[i].width, curRoom.players[i].height);
       ctx.font = "20px Play";
       ctx.textAlign = "center";
-      ctx.fillText(curRoom.players[i].username + " : " + curRoom.players[i].score, curRoom.players[i].x - camX, curRoom.players[i].y + curRoom.players[i].height - camY + 10);
+      ctx.fillText(curRoom.players[i].username + " : " + curRoom.players[i].score, curRoom.players[i].pos.x - camX, curRoom.players[i].pos.y + curRoom.players[i].height - camY + 10);
     }
   }
 
@@ -192,8 +192,8 @@ function render() {
     for (var i = 0; i < map.walls.length; i++) {
       if (map.walls.hasOwnProperty(i)) {
         ctx.beginPath();
-        ctx.moveTo(map.walls[i].x0 - camX, map.walls[i].y0 - camY);
-        ctx.lineTo(map.walls[i].x1 - camX, map.walls[i].y1 - camY);
+        ctx.moveTo(map.walls[i].pos1.x - camX, map.walls[i].pos1.y - camY);
+        ctx.lineTo(map.walls[i].pos2.x - camX, map.walls[i].pos2.y - camY);
         ctx.lineWidth = 5;
         ctx.strokeStyle = map.walls[i].color;
         ctx.stroke();

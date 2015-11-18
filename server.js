@@ -25,9 +25,7 @@ app.use(bodyParser.urlencoded({
 //Add a room
 var room0 = new engine.Room();
 rooms.push(room0);
-if (cubicMap = JSON.parse(fs.readFileSync("maps/cubic.json"))) {
-  console.log("Loaded map");
-}
+if (cubicMap = JSON.parse(fs.readFileSync("maps/cubic.json"))) {}
 room0.loadMap(cubicMap);
 
 //Run server
@@ -98,13 +96,12 @@ io.on("connection", function(socket) {
       socket.on("fire", function(pos) {
         if (curPlayer.fireTimer > 20) {
           //Calculate direction
-          var disX = pos.x - curPlayer.x;
-          var disY = pos.y - curPlayer.y;
-          var mag = Math.sqrt(disX * disX + disY * disY);
-          var dirX = disX / mag;
-          var dirY = disY / mag;
-          rooms[room].spawnProjectile(curPlayer.x, curPlayer.y, dirX, dirY, playerIndex);
+          var dis = new engine.Vec2(pos.x - curPlayer.pos.x, pos.y - curPlayer.pos.y);
+          var mag = Math.sqrt(dis.x * dis.x + dis.y * dis.y);
+          var dir = new engine.Vec2(dis.x / mag, dis.y / mag);
+          rooms[room].spawnProjectile(new engine.Vec2(curPlayer.pos.x, curPlayer.pos.y), dir, id);
           curPlayer.fireTimer = 0;
+          console.log("FIRE");
         }
       });
 
@@ -118,10 +115,28 @@ io.on("connection", function(socket) {
 });
 
 setInterval(updateRooms, 15);
-setInterval(sendUpdate, 30);
+setInterval(sendUpdate, config.updateDelta);
 
 function updateRooms() {
   for (a = 0; a < rooms.length; a++) {
+    for (i = 0; i < rooms[a].data.projectiles.length; i++) {
+      var curProj = rooms[a].data.projectiles[i];
+      if (curProj.dead == true) {
+        rooms[a].removeProjectileByIndex(i);
+        return;
+      }
+      curProj.update();
+
+      for (p = 0; p < rooms[a].data.players.length; p++) {
+        if (curProj.pos.x > rooms[a].data.players[p].pos.x - (rooms[a].data.players[p].width / 2) && curProj.pos.x < rooms[a].data.players[p].pos.x + (rooms[a].data.players[p].width / 2) && curProj.pos.y > rooms[a].data.players[p].pos.y - (rooms[a].data.players[p].height / 2) && curProj.pos.y < rooms[a].data.players[p].pos.y + (rooms[a].data.players[p].height / 2)) {
+          if (rooms[a].data.players[p].id != curProj.id) {
+            rooms[a].getPlayerByIndex(curProj.playerId).score++;
+            rooms[a].data.players[p].dead = true;
+            curProj.dead = true;
+          }
+        }
+      }
+    }
 
     for (i = 0; i < rooms[a].data.players.length; i++) {
       var curPlayer = rooms[a].data.players[i];
@@ -133,8 +148,9 @@ function updateRooms() {
         if (curPlayer.input.up) moveY -= 1;
         if (curPlayer.input.down) moveY += 1;
 
-        curPlayer.xVel += moveX * 0.2;
-        curPlayer.yVel += moveY * 0.2;
+        curPlayer.vel.x += moveX * 0.2;
+        curPlayer.vel.y += moveY * 0.2;
+
       }
       /*for (var i = 0; i < rooms[a].map.walls.length; i++) {
         if (rooms[a].map.walls.hasOwnProperty(i)) {
@@ -145,26 +161,16 @@ function updateRooms() {
         }
       }*/
 
+
+      if (curPlayer.dead) {
+        curPlayer.dead = false;
+        curPlayer.spawn(new engine.Vec2(0, 0), new engine.Vec2(0, 0));
+        console.log("Player " + curPlayer.username + " died");
+      }
+
       curPlayer.update();
     }
 
-    for (i = 0; i < rooms[a].data.projectiles.length; i++) {
-      var curProj = rooms[a].data.projectiles[i];
-      if (curProj.dead == true) {
-        rooms[a].removeProjectileByIndex(i);
-        return;
-      }
-      curProj.update();
-
-      for (p = 0; p < rooms[a].data.players.length; p++) {
-        if (curProj.x > rooms[a].data.players[p].x - (rooms[a].data.players[p].width / 2) && curProj.x < rooms[a].data.players[p].x + (rooms[a].data.players[p].width / 2) && curProj.y > rooms[a].data.players[p].y - (rooms[a].data.players[p].height / 2) && curProj.y < rooms[a].data.players[p].y + (rooms[a].data.players[p].height / 2)) {
-          if (rooms[a].data.players[p].index != curProj.playerIndex) {
-            rooms[a].getPlayerByIndex(curProj.playerId).score++;
-            rooms[a].data.players[p].dead = true;
-          }
-        }
-      }
-    }
   }
 }
 
