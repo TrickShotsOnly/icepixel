@@ -30,7 +30,7 @@ room0.loadMap(cubicMap);
 
 //Run server
 http.listen(config.port, function() {
-  console.log("icepixel is now running on port " + config.port);
+  console.log("icepixel now running on port " + config.port);
 });
 
 //Handle connection
