@@ -2,7 +2,7 @@
   "port": 9000,
   "updateDelta":45,
   "players": {
-    "maxVel": 6
+    "maxVel": 20
   },
   "adminPassword": "hashtagselfie123"
 }

@@ -84,7 +84,7 @@ io.on("connection", function(socket) {
       curPlayer.maxVel = config.players.maxVel;
       curPlayer.pos.x = 60;
       curPlayer.pos.y = 100;
-      //curPlayer.spawn();
+			
       socket.on("inputUpdate", function(input) {
         curPlayer.input = input;
       });
@@ -100,10 +100,11 @@ io.on("connection", function(socket) {
           //Calculate direction
           var dis = new engine.Vec2(pos.x - curPlayer.pos.x, pos.y - curPlayer.pos.y);
           var mag = Math.sqrt(dis.x * dis.x + dis.y * dis.y);
-          var dir = new engine.Vec2(dis.x / mag, dis.y / mag);
+					var vel = Math.sqrt(curPlayer.vel.x * curPlayer.vel.x + curPlayer.vel.y * curPlayer.vel.y);
+          var dir = new engine.Vec2(dis.x / mag * (vel * 0.05 + 0.2), dis.y / mag * (vel * 0.05 + 0.2));
           rooms[room].spawnProjectile(new engine.Vec2(curPlayer.pos.x, curPlayer.pos.y), dir, id);
           curPlayer.fireTimer = 0;
-          console.log("FIRE");
+					console.log(vel);
         }
       });
 
@@ -133,7 +134,7 @@ function updateRooms() {
         if (curProj.pos.x > rooms[a].data.players[p].pos.x - (rooms[a].data.players[p].width / 2) && curProj.pos.x < rooms[a].data.players[p].pos.x + (rooms[a].data.players[p].width / 2) && curProj.pos.y > rooms[a].data.players[p].pos.y - (rooms[a].data.players[p].height / 2) && curProj.pos.y < rooms[a].data.players[p].pos.y + (rooms[a].data.players[p].height / 2)) {
           if (rooms[a].data.players[p].id != curProj.id) {
             rooms[a].getPlayerById(curProj.id).score++;
-	    console.log(curProj.id);
+            console.log(curProj.id);
             rooms[a].data.players[p].dead = true;
             curProj.dead = true;
           }
@@ -151,37 +152,46 @@ function updateRooms() {
         if (curPlayer.input.up) moveY -= 1;
         if (curPlayer.input.down) moveY += 1;
 
-        curPlayer.vel.x += moveX * 0.2;
-        curPlayer.vel.y += moveY * 0.2;
+        curPlayer.vel.x += moveX * 0.09;
+        curPlayer.vel.y += moveY * 0.09;
+
+        if (moveX == 0) {
+          curPlayer.vel.x *= 0.98;
+        }
+        if (moveY == 0) {
+          curPlayer.vel.y *= 0.98;
+        }
 
       }
-      /*for (var i = 0; i < rooms[a].map.walls.length; i++) {
+      for (var i = 0; i < rooms[a].map.walls.length; i++) {
         if (rooms[a].map.walls.hasOwnProperty(i)) {
           var wall = rooms[a].map.walls[i];
           if (curPlayer.x - (curPlayer.width / 2) < wall.x + (wall.width) && curPlayer.x + (curPlayer.width / 2) > wall.x &&
             curPlayer.y - (curPlayer.height / 2) < wall.y + (wall.height) && curPlayer.y + (curPlayer.height / 2) > wall.y
-          ) {}
+          ) {
+						console.log("Touch");
+					}
         }
-      }*/
-
-      if (curPlayer.pos.x < -500) {
-         curPlayer.vel.x = 3;
-      }
-      if (curPlayer.pos.x > 1500) {
-         curPlayer.vel.x = -3; 
       }
 
-      if (curPlayer.pos.y < -500) {
-         curPlayer.vel.y = 3;
+      if (curPlayer.pos.x < -500 + 20) {
+        curPlayer.vel.x += 3;
+      }
+      if (curPlayer.pos.x > 1500 - 20) {
+        curPlayer.vel.x -= 3;
       }
 
-      if (curPlayer.pos.y > 1000) {
-    	 curPlayer.vel.y = -3;
+      if (curPlayer.pos.y < -500 + 20) {
+        curPlayer.vel.y += 3;
+      }
+
+      if (curPlayer.pos.y > 1000 - 20) {
+        curPlayer.vel.y -= 3;
       }
 
       if (curPlayer.dead) {
         curPlayer.dead = false;
-        curPlayer.spawn(new engine.Vec2(Math.random() * 900, Math.random() * 900), new engine.Vec2(Math.random() * 90, Math.random() *90));
+        curPlayer.spawn(new engine.Vec2(Math.random() * 900, Math.random() * 900), new engine.Vec2(Math.random() * 90, Math.random() * 90));
         console.log("Player " + curPlayer.username + " died");
       }
 

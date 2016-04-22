@@ -8,6 +8,12 @@ var lastUpdate;
 var playing = false;
 var playerIndex = 0;
 
+var WORLD_START_X = -1500;
+var WORLD_START_Y = -1000;
+var WORLD_END_X = 3500;
+var WORLD_END_Y = 3000;
+var GRID_SIZE = 75;
+
 var camX,
   camY;
 
@@ -129,6 +135,14 @@ function play(id) {
 
   document.addEventListener("keydown", function(evt) {
     keypress[evt.keyCode] = true;
+		if(evt.keyCode == 32) {
+			var pos = {
+				x: mouseX + camX,
+				y: mouseY + camY
+			}
+			socket.emit("fire", pos);
+			return;
+		}
     inputUpdate();
   });
 
@@ -168,24 +182,26 @@ function update() {
 function render() {
   //Clear
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  //Draw room
-  if (curRoom) {
-    //Projectiles
-    for (i = 0; i < curRoom.projectiles.length; i++) {
-      ctx.fillStyle = "#2199ff";
-      ctx.globalAlpha = (curRoom.projectiles[i].lifeTime - curRoom.projectiles[i].timer) / curRoom.projectiles[i].lifeTime;
-      ctx.fillRect(curRoom.projectiles[i].pos.x - 10 - camX, curRoom.projectiles[i].pos.y - 10 - camY, 20, 20);
-      ctx.globalAlpha = 1;
-    }
-    //Players
-    for (i = 0; i < curRoom.players.length; i++) {
-      ctx.fillStyle = curRoom.players[i].color;
-      ctx.fillRect(curRoom.players[i].pos.x - (curRoom.players[i].width / 2) - camX, curRoom.players[i].pos.y - (curRoom.players[i].width / 2) - camY, curRoom.players[i].width, curRoom.players[i].height);
-      ctx.font = "20px Play";
-      ctx.textAlign = "center";
-      ctx.fillText(curRoom.players[i].username + " : " + curRoom.players[i].score, curRoom.players[i].pos.x - camX, curRoom.players[i].pos.y + curRoom.players[i].height - camY + 10);
-    }
-  }
+
+	for (i = WORLD_START_X; i < WORLD_END_X; i += GRID_SIZE) {
+		ctx.beginPath();
+		ctx.moveTo(WORLD_START_X + i - camX, WORLD_START_Y - camY);
+		ctx.lineTo(WORLD_START_X + i - camX, WORLD_END_Y - camY);
+		ctx.lineWidth = 1;
+		ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+		ctx.stroke();
+		ctx.fill();
+	}
+
+	for (i = WORLD_START_Y; i < WORLD_END_Y; i += GRID_SIZE) {
+		ctx.beginPath();
+		ctx.moveTo(WORLD_START_X - camX, WORLD_START_Y + i - camY);
+		ctx.lineTo(WORLD_END_X - camX, WORLD_START_Y + i - camY);
+		ctx.lineWidth = 1;
+		ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+		ctx.stroke();
+		ctx.fill();
+	}
 
   if (map) {
     //Draw map
@@ -201,6 +217,24 @@ function render() {
       }
     }
   }
+	//Draw room
+	if (curRoom) {
+		//Projectiles
+		for (i = 0; i < curRoom.projectiles.length; i++) {
+			ctx.fillStyle = "#2199ff";
+			ctx.globalAlpha = (curRoom.projectiles[i].lifeTime - curRoom.projectiles[i].timer) / curRoom.projectiles[i].lifeTime;
+			ctx.fillRect(curRoom.projectiles[i].pos.x - 10 - camX, curRoom.projectiles[i].pos.y - 10 - camY, 20, 20);
+			ctx.globalAlpha = 1;
+		}
+		//Players
+		for (i = 0; i < curRoom.players.length; i++) {
+			ctx.fillStyle = curRoom.players[i].color;
+			ctx.fillRect(curRoom.players[i].pos.x - (curRoom.players[i].width / 2) - camX, curRoom.players[i].pos.y - (curRoom.players[i].width / 2) - camY, curRoom.players[i].width, curRoom.players[i].height);
+			ctx.font = "20px Play";
+			ctx.textAlign = "center";
+			ctx.fillText(curRoom.players[i].username + " : " + curRoom.players[i].score, curRoom.players[i].pos.x - camX, curRoom.players[i].pos.y + curRoom.players[i].height - camY + 10);
+		}
+	}
   drawCursor();
 }
 
