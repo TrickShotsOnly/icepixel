@@ -82,7 +82,9 @@ io.on("connection", function(socket) {
       var playerIndex = rooms[room].addPlayer(id, username);
       var curPlayer = rooms[room].getPlayerByIndex(playerIndex);
       curPlayer.maxVel = config.players.maxVel;
-
+      curPlayer.pos.x = 60;
+      curPlayer.pos.y = 100;
+      //curPlayer.spawn();
       socket.on("inputUpdate", function(input) {
         curPlayer.input = input;
       });
@@ -130,7 +132,8 @@ function updateRooms() {
       for (p = 0; p < rooms[a].data.players.length; p++) {
         if (curProj.pos.x > rooms[a].data.players[p].pos.x - (rooms[a].data.players[p].width / 2) && curProj.pos.x < rooms[a].data.players[p].pos.x + (rooms[a].data.players[p].width / 2) && curProj.pos.y > rooms[a].data.players[p].pos.y - (rooms[a].data.players[p].height / 2) && curProj.pos.y < rooms[a].data.players[p].pos.y + (rooms[a].data.players[p].height / 2)) {
           if (rooms[a].data.players[p].id != curProj.id) {
-            rooms[a].getPlayerByIndex(curProj.playerId).score++;
+            rooms[a].getPlayerById(curProj.id).score++;
+	    console.log(curProj.id);
             rooms[a].data.players[p].dead = true;
             curProj.dead = true;
           }
@@ -161,10 +164,24 @@ function updateRooms() {
         }
       }*/
 
+      if (curPlayer.pos.x < -500) {
+         curPlayer.vel.x = 3;
+      }
+      if (curPlayer.pos.x > 1500) {
+         curPlayer.vel.x = -3; 
+      }
+
+      if (curPlayer.pos.y < -500) {
+         curPlayer.vel.y = 3;
+      }
+
+      if (curPlayer.pos.y > 1000) {
+    	 curPlayer.vel.y = -3;
+      }
 
       if (curPlayer.dead) {
         curPlayer.dead = false;
-        curPlayer.spawn(new engine.Vec2(0, 0), new engine.Vec2(0, 0));
+        curPlayer.spawn(new engine.Vec2(Math.random() * 900, Math.random() * 900), new engine.Vec2(Math.random() * 90, Math.random() *90));
         console.log("Player " + curPlayer.username + " died");
       }
 
