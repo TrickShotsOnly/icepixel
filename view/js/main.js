@@ -3,14 +3,23 @@ var id;
 var socket = io();
 var canvas;
 var ctx;
+
+var nextRoom;
 var curRoom;
+var lastRoom;
+
 var lastUpdate;
+
+var lastRoomUpdate;
+var roomDelta;
+var roomLerpTimer;
+
 var playing = false;
 var playerIndex = 0;
 
 var WORLD_START_X = -1500;
 var WORLD_START_Y = -1000;
-var WORLD_END_X = 3500;
+var WORLD_END_X = 4300;
 var WORLD_END_Y = 3000;
 var GRID_SIZE = 75;
 
@@ -159,7 +168,14 @@ function play(id) {
   update();
 
   socket.on("roomUpdate", function(room) {
-    curRoom = room;
+    var now = Date.now();
+    roomDelta = now - lastRoomUpdate;
+    lastRoomUpdate = now;
+    roomLerpTimer = 0;
+
+    lastRoom = nextRoom;
+    curRoom = nextRoom;
+    nextRoom = room;
   });
 
   socket.on("kill", function(username) {
@@ -173,6 +189,9 @@ function play(id) {
     popupFade = 0;
     killedPopup = true;
   });
+
+  camX = 0;
+  camY = 0;
 }
 
 function update() {
@@ -180,17 +199,26 @@ function update() {
   var delta = now - lastUpdate;
   lastUpdate = now;
 
+  roomLerpTimer += delta;
+
   if (curRoom) {
     for (i = 0; i < curRoom.players.length; i++) {
-      curRoom.players[i].pos.x += curRoom.players[i].vel.x;
-      curRoom.players[i].pos.y += curRoom.players[i].vel.y;
+      if (nextRoom.players[i]) {
+        curRoom.players[i].pos.x += (nextRoom.players[i].pos.x - lastRoom.players[i].pos.x) * (roomLerpTimer / roomDelta);
+        curRoom.players[i].pos.y += (nextRoom.players[i].pos.y - lastRoom.players[i].pos.y) * (roomLerpTimer / roomDelta);
+      }
     }
     for (i = 0; i < curRoom.projectiles.length; i++) {
       curRoom.projectiles[i].pos.x += curRoom.projectiles[i].vel.x;
       curRoom.projectiles[i].pos.y += curRoom.projectiles[i].vel.y;
     }
-    camX = curRoom.players[playerIndex].pos.x - canvas.width / 2;
-    camY = curRoom.players[playerIndex].pos.y - canvas.height / 2;
+
+    //var lerp = 2;
+    //camX += (curRoom.players[playerIndex].pos.x - camX - (canvas.width / 2)) * 1/delta * lerp;
+    //camY += (curRoom.players[playerIndex].pos.y - camY - (canvas.height / 2)) * 1/delta * lerp;
+
+    camX = curRoom.players[playerIndex].pos.x - (canvas.width / 2);
+    camY = curRoom.players[playerIndex].pos.y - (canvas.height / 2);
   }
   render();
   window.requestAnimationFrame(update);
@@ -200,9 +228,9 @@ function render() {
   //Clear
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-	if (killedPopup) {
-		ctx.globalAlpha = (popupFade + 1) / popupTime;
-	}
+  if (killedPopup) {
+    ctx.globalAlpha = (popupFade + 1) / popupTime;
+  }
 
   for (i = WORLD_START_X; i < WORLD_END_X; i += GRID_SIZE) {
     ctx.beginPath();
@@ -242,39 +270,43 @@ function render() {
   if (curRoom) {
     //Projectiles
     for (i = 0; i < curRoom.projectiles.length; i++) {
-      ctx.fillStyle = "#2199ff";
-      ctx.globalAlpha = (curRoom.projectiles[i].lifeTime - curRoom.projectiles[i].timer) / curRoom.projectiles[i].lifeTime;
-      ctx.fillRect(curRoom.projectiles[i].pos.x - 10 - camX, curRoom.projectiles[i].pos.y - 10 - camY, 20, 20);
-      ctx.globalAlpha = 1;
+      if (nextRoom.projectiles[i] && !nextRoom.projectiles[i].dead) {
+        ctx.fillStyle = "#2199ff";
+        ctx.globalAlpha = (curRoom.projectiles[i].lifeTime - curRoom.projectiles[i].timer) / curRoom.projectiles[i].lifeTime;
+        ctx.fillRect(curRoom.projectiles[i].pos.x - 10 - camX, curRoom.projectiles[i].pos.y - 10 - camY, 20, 20);
+        ctx.globalAlpha = 1;
+      }
     }
     //Players
     for (i = 0; i < curRoom.players.length; i++) {
-      ctx.fillStyle = curRoom.players[i].color;
-      ctx.fillRect(curRoom.players[i].pos.x - (curRoom.players[i].width / 2) - camX, curRoom.players[i].pos.y - (curRoom.players[i].width / 2) - camY, curRoom.players[i].width, curRoom.players[i].height);
-      ctx.font = "20px Play";
-      ctx.textAlign = "center";
-      ctx.fillText(curRoom.players[i].username + " : " + curRoom.players[i].score, curRoom.players[i].pos.x - camX, curRoom.players[i].pos.y + curRoom.players[i].height - camY + 10);
+      if (nextRoom.players[i] && !nextRoom.players[i].dead) {
+        ctx.fillStyle = curRoom.players[i].color;
+        ctx.fillRect(curRoom.players[i].pos.x - (curRoom.players[i].width / 2) - camX, curRoom.players[i].pos.y - (curRoom.players[i].width / 2) - camY, curRoom.players[i].width, curRoom.players[i].height);
+        ctx.font = "20px Play";
+        ctx.textAlign = "center";
+        ctx.fillText(curRoom.players[i].username, curRoom.players[i].pos.x - camX, curRoom.players[i].pos.y + curRoom.players[i].height - camY + 10);
+      }
     }
   }
 
-	popupFade ++;
+  popupFade++;
 
   if (killPopup) {
-		ctx.globalAlpha = (popupTime - popupFade + 1) / popupTime;
+    ctx.globalAlpha = (popupTime - popupFade + 1) / popupTime;
     ctx.fillStyle = "#ffffff";
     ctx.font = "30px Play";
     ctx.textAlign = "center";
-    ctx.fillText("Killed " + otherUsername, canvas.width / 2, canvas.height * (1/4));
-		ctx.globalAlpha = 1;
+    ctx.fillText("Killed " + otherUsername, canvas.width / 2, canvas.height * (1 / 4));
+    ctx.globalAlpha = 1;
   }
 
   if (killedPopup) {
-		ctx.globalAlpha = (popupTime - popupFade + 1) / popupTime;
+    ctx.globalAlpha = (popupTime - popupFade + 1) / popupTime;
     ctx.fillStyle = "#ffffff";
     ctx.font = "30px Play";
     ctx.textAlign = "center";
-    ctx.fillText("Killed by " + otherUsername, canvas.width / 2, canvas.height * (1/4));
-		ctx.globalAlpha = 1;
+    ctx.fillText("Killed by " + otherUsername, canvas.width / 2, canvas.height * (1 / 4));
+    ctx.globalAlpha = 1;
   }
 
   if (popupFade > popupTime) {
@@ -282,7 +314,20 @@ function render() {
     killedPopup = false;
   }
 
+	drawScoreboard();
   drawCursor();
+}
+
+function drawScoreboard() {
+	ctx.fillStyle = "#ffffff";
+	ctx.font = "16px Play";
+	ctx.textAlign = "left";
+	if(curRoom) {
+		for(i = 0; i < curRoom.players.length; i++) {
+			ctx.fillText(curRoom.players[i].username + " - " + curRoom.players[i].score, 30, 30 + (i * 30));
+		}
+	}
+
 }
 
 function drawCursor() {
@@ -306,7 +351,6 @@ function resize() {
 }
 
 function inputUpdate() {
-
   var input = {
     left: false,
     right: false,

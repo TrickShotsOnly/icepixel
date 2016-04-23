@@ -13,16 +13,6 @@
     //Identification
     this.id = id;
     this.username = username;
-
-    //Shape
-    var vertices = [
-      new exports.Vec2(20, 20),
-      new exports.Vec2(-20, 20),
-      new exports.Vec2(-20, -20),
-      new exports.Vec2(20, -20)
-    ];
-    this.shape = new exports.Shape(vertices);
-
     this.width = 40;
     this.height = 40;
 
@@ -31,11 +21,7 @@
     this.maxVel = 0;
     this.pos = new exports.Vec2(0, 0);
 
-    //Input variables
-    this.left = false;
-    this.right = false;
-    this.up = false;
-    this.down = false;
+		this.input = {};
 
     this.color = "orange";
     this.fireTimer = 0;
@@ -63,7 +49,7 @@
   exports.Projectile = function(pos, vel, id) {
     this.pos = pos;
     this.vel = new exports.Vec2(vel.x * 30, vel.y * 30);
-    this.lifeTime = 40;
+    this.lifeTime = 70;
     this.timer = 0
     this.dead = false;
     this.id = id;
@@ -74,8 +60,8 @@
         this.dead = true;
         return;
       }
-      this.vel.x *= 0.99;
-      this.vel.y *= 0.99;
+      this.vel.x *= 0.98;
+      this.vel.y *= 0.98;
 
       this.pos.x += this.vel.x;
       this.pos.y += this.vel.y;

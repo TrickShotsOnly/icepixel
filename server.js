@@ -7,6 +7,8 @@ var bodyParser = require("body-parser");
 var engine = require("./engine");
 var UUID = require("node-uuid");
 
+var playerAccel = 0.3;
+
 var rooms = [];
 var authentications = [];
 
@@ -105,10 +107,9 @@ io.on("connection", function(socket) {
           var dis = new engine.Vec2(pos.x - curPlayer.pos.x, pos.y - curPlayer.pos.y);
           var mag = Math.sqrt(dis.x * dis.x + dis.y * dis.y);
 					var vel = Math.sqrt(curPlayer.vel.x * curPlayer.vel.x + curPlayer.vel.y * curPlayer.vel.y);
-          var dir = new engine.Vec2(dis.x / mag * (vel * 0.05 + 0.2), dis.y / mag * (vel * 0.05 + 0.2));
+          var dir = new engine.Vec2(dis.x / mag * (vel * 0.07 + 0.32), dis.y / mag * (vel * 0.07 + 0.32));
           rooms[room].spawnProjectile(new engine.Vec2(curPlayer.pos.x, curPlayer.pos.y), dir, id);
           curPlayer.fireTimer = 0;
-					console.log(vel);
         }
       });
 
@@ -163,8 +164,8 @@ function updateRooms() {
         if (curPlayer.input.up) moveY -= 1;
         if (curPlayer.input.down) moveY += 1;
 
-        curPlayer.vel.x += moveX * 0.09;
-        curPlayer.vel.y += moveY * 0.09;
+        curPlayer.vel.x += moveX * playerAccel;
+        curPlayer.vel.y += moveY * playerAccel;
 
         if (moveX == 0) {
           curPlayer.vel.x *= 0.98;
