@@ -33,8 +33,9 @@ http.listen(config.port, function() {
   console.log("icepixel now running on port " + config.port);
 });
 
-//Handle connection
+var clients = {};
 
+//Handle connection
 io.on("connection", function(socket) {
   var id = UUID();
   var username;
@@ -82,9 +83,12 @@ io.on("connection", function(socket) {
       var playerIndex = rooms[room].addPlayer(id, username);
       var curPlayer = rooms[room].getPlayerByIndex(playerIndex);
       curPlayer.maxVel = config.players.maxVel;
-      curPlayer.pos.x = 60;
-      curPlayer.pos.y = 100;
-			
+      curPlayer.pos = new engine.Vec2(Math.random() * 2000 - 500, Math.random() * 1500 - 500);
+			curPlayer.vel = new engine.Vec2(Math.random() * 10 - 5, Math.random() * 10 - 5);
+
+			//Save socket for further use
+			clients[id] = socket;
+
       socket.on("inputUpdate", function(input) {
         curPlayer.input = input;
       });
@@ -131,9 +135,16 @@ function updateRooms() {
       curProj.update();
 
       for (p = 0; p < rooms[a].data.players.length; p++) {
-        if (curProj.pos.x > rooms[a].data.players[p].pos.x - (rooms[a].data.players[p].width / 2) && curProj.pos.x < rooms[a].data.players[p].pos.x + (rooms[a].data.players[p].width / 2) && curProj.pos.y > rooms[a].data.players[p].pos.y - (rooms[a].data.players[p].height / 2) && curProj.pos.y < rooms[a].data.players[p].pos.y + (rooms[a].data.players[p].height / 2)) {
-          if (rooms[a].data.players[p].id != curProj.id) {
+
+        if (curProj.pos.x > rooms[a].data.players[p].pos.x - (rooms[a].data.players[p].width)
+					&& curProj.pos.x < rooms[a].data.players[p].pos.x + (rooms[a].data.players[p].width)
+					&& curProj.pos.y > rooms[a].data.players[p].pos.y - (rooms[a].data.players[p].height)
+					&& curProj.pos.y < rooms[a].data.players[p].pos.y + (rooms[a].data.players[p].height)) {
+
+					if (rooms[a].data.players[p].id != curProj.id) {
             rooms[a].getPlayerById(curProj.id).score++;
+						clients[curProj.id].emit("kill", rooms[a].data.players[p].username);
+						clients[rooms[a].data.players[p].id].emit("killed", rooms[a].getPlayerById(curProj.id).username);
             console.log(curProj.id);
             rooms[a].data.players[p].dead = true;
             curProj.dead = true;
@@ -163,7 +174,8 @@ function updateRooms() {
         }
 
       }
-      for (var i = 0; i < rooms[a].map.walls.length; i++) {
+
+      /*for (var i = 0; i < rooms[a].map.walls.length; i++) {
         if (rooms[a].map.walls.hasOwnProperty(i)) {
           var wall = rooms[a].map.walls[i];
           if (curPlayer.x - (curPlayer.width / 2) < wall.x + (wall.width) && curPlayer.x + (curPlayer.width / 2) > wall.x &&
@@ -172,7 +184,7 @@ function updateRooms() {
 						console.log("Touch");
 					}
         }
-      }
+      }*/
 
       if (curPlayer.pos.x < -500 + 20) {
         curPlayer.vel.x += 3;
@@ -191,7 +203,7 @@ function updateRooms() {
 
       if (curPlayer.dead) {
         curPlayer.dead = false;
-        curPlayer.spawn(new engine.Vec2(Math.random() * 900, Math.random() * 900), new engine.Vec2(Math.random() * 90, Math.random() * 90));
+        curPlayer.spawn(new engine.Vec2(Math.random() * 2000 - 500, Math.random() * 1500 - 500), new engine.Vec2(Math.random() * 10 - 5, Math.random() * 10 - 5));
         console.log("Player " + curPlayer.username + " died");
       }
 

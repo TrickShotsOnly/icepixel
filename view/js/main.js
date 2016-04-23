@@ -22,6 +22,12 @@ var mouseX,
 
 var map;
 
+var popupFade = 0;
+var popupTime = 100;
+var killPopup = false;
+var killedPopup = false;
+var otherUsername;
+
 var keypress = {},
   prevKeypress = {
     init: 0
@@ -43,7 +49,7 @@ $(document).ready(function() {
     opacity: 1
   }, 200);
 
-  socket.on("numRooms", function(data){
+  socket.on("numRooms", function(data) {
     for (i = 0; i < data; i++) {
       $("#s").append('<option value="' + i + '">Room ' + i + '</option>');
     }
@@ -135,14 +141,13 @@ function play(id) {
 
   document.addEventListener("keydown", function(evt) {
     keypress[evt.keyCode] = true;
-		if(evt.keyCode == 32) {
-			var pos = {
-				x: mouseX + camX,
-				y: mouseY + camY
-			}
-			socket.emit("fire", pos);
-			return;
-		}
+    if (evt.keyCode == 32) {
+      var pos = {
+        x: mouseX + camX,
+        y: mouseY + camY
+      }
+      socket.emit("fire", pos);
+    }
     inputUpdate();
   });
 
@@ -156,13 +161,25 @@ function play(id) {
   socket.on("roomUpdate", function(room) {
     curRoom = room;
   });
+
+  socket.on("kill", function(username) {
+    otherUsername = username;
+    popupFade = 0;
+    killPopup = true;
+  });
+
+  socket.on("killed", function(username) {
+    otherUsername = username;
+    popupFade = 0;
+    killedPopup = true;
+  });
 }
 
 function update() {
   var now = Date.now();
   var delta = now - lastUpdate;
   lastUpdate = now;
-  //console.log(delta);
+
   if (curRoom) {
     for (i = 0; i < curRoom.players.length; i++) {
       curRoom.players[i].pos.x += curRoom.players[i].vel.x;
@@ -172,8 +189,8 @@ function update() {
       curRoom.projectiles[i].pos.x += curRoom.projectiles[i].vel.x;
       curRoom.projectiles[i].pos.y += curRoom.projectiles[i].vel.y;
     }
-    camX = curRoom.players[playerIndex].pos.x - canvas.width / 2 + 20;
-    camY = curRoom.players[playerIndex].pos.y - canvas.height / 2 + 20;
+    camX = curRoom.players[playerIndex].pos.x - canvas.width / 2;
+    camY = curRoom.players[playerIndex].pos.y - canvas.height / 2;
   }
   render();
   window.requestAnimationFrame(update);
@@ -183,25 +200,29 @@ function render() {
   //Clear
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-	for (i = WORLD_START_X; i < WORLD_END_X; i += GRID_SIZE) {
-		ctx.beginPath();
-		ctx.moveTo(WORLD_START_X + i - camX, WORLD_START_Y - camY);
-		ctx.lineTo(WORLD_START_X + i - camX, WORLD_END_Y - camY);
-		ctx.lineWidth = 1;
-		ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
-		ctx.stroke();
-		ctx.fill();
+	if (killedPopup) {
+		ctx.globalAlpha = (popupFade + 1) / popupTime;
 	}
 
-	for (i = WORLD_START_Y; i < WORLD_END_Y; i += GRID_SIZE) {
-		ctx.beginPath();
-		ctx.moveTo(WORLD_START_X - camX, WORLD_START_Y + i - camY);
-		ctx.lineTo(WORLD_END_X - camX, WORLD_START_Y + i - camY);
-		ctx.lineWidth = 1;
-		ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
-		ctx.stroke();
-		ctx.fill();
-	}
+  for (i = WORLD_START_X; i < WORLD_END_X; i += GRID_SIZE) {
+    ctx.beginPath();
+    ctx.moveTo(WORLD_START_X + i - camX, WORLD_START_Y - camY);
+    ctx.lineTo(WORLD_START_X + i - camX, WORLD_END_Y - camY);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+    ctx.stroke();
+    ctx.fill();
+  }
+
+  for (i = WORLD_START_Y; i < WORLD_END_Y; i += GRID_SIZE) {
+    ctx.beginPath();
+    ctx.moveTo(WORLD_START_X - camX, WORLD_START_Y + i - camY);
+    ctx.lineTo(WORLD_END_X - camX, WORLD_START_Y + i - camY);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+    ctx.stroke();
+    ctx.fill();
+  }
 
   if (map) {
     //Draw map
@@ -217,24 +238,50 @@ function render() {
       }
     }
   }
-	//Draw room
-	if (curRoom) {
-		//Projectiles
-		for (i = 0; i < curRoom.projectiles.length; i++) {
-			ctx.fillStyle = "#2199ff";
-			ctx.globalAlpha = (curRoom.projectiles[i].lifeTime - curRoom.projectiles[i].timer) / curRoom.projectiles[i].lifeTime;
-			ctx.fillRect(curRoom.projectiles[i].pos.x - 10 - camX, curRoom.projectiles[i].pos.y - 10 - camY, 20, 20);
-			ctx.globalAlpha = 1;
-		}
-		//Players
-		for (i = 0; i < curRoom.players.length; i++) {
-			ctx.fillStyle = curRoom.players[i].color;
-			ctx.fillRect(curRoom.players[i].pos.x - (curRoom.players[i].width / 2) - camX, curRoom.players[i].pos.y - (curRoom.players[i].width / 2) - camY, curRoom.players[i].width, curRoom.players[i].height);
-			ctx.font = "20px Play";
-			ctx.textAlign = "center";
-			ctx.fillText(curRoom.players[i].username + " : " + curRoom.players[i].score, curRoom.players[i].pos.x - camX, curRoom.players[i].pos.y + curRoom.players[i].height - camY + 10);
-		}
-	}
+  //Draw room
+  if (curRoom) {
+    //Projectiles
+    for (i = 0; i < curRoom.projectiles.length; i++) {
+      ctx.fillStyle = "#2199ff";
+      ctx.globalAlpha = (curRoom.projectiles[i].lifeTime - curRoom.projectiles[i].timer) / curRoom.projectiles[i].lifeTime;
+      ctx.fillRect(curRoom.projectiles[i].pos.x - 10 - camX, curRoom.projectiles[i].pos.y - 10 - camY, 20, 20);
+      ctx.globalAlpha = 1;
+    }
+    //Players
+    for (i = 0; i < curRoom.players.length; i++) {
+      ctx.fillStyle = curRoom.players[i].color;
+      ctx.fillRect(curRoom.players[i].pos.x - (curRoom.players[i].width / 2) - camX, curRoom.players[i].pos.y - (curRoom.players[i].width / 2) - camY, curRoom.players[i].width, curRoom.players[i].height);
+      ctx.font = "20px Play";
+      ctx.textAlign = "center";
+      ctx.fillText(curRoom.players[i].username + " : " + curRoom.players[i].score, curRoom.players[i].pos.x - camX, curRoom.players[i].pos.y + curRoom.players[i].height - camY + 10);
+    }
+  }
+
+	popupFade ++;
+
+  if (killPopup) {
+		ctx.globalAlpha = (popupTime - popupFade + 1) / popupTime;
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "30px Play";
+    ctx.textAlign = "center";
+    ctx.fillText("Killed " + otherUsername, canvas.width / 2, canvas.height * (1/4));
+		ctx.globalAlpha = 1;
+  }
+
+  if (killedPopup) {
+		ctx.globalAlpha = (popupTime - popupFade + 1) / popupTime;
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "30px Play";
+    ctx.textAlign = "center";
+    ctx.fillText("Killed by " + otherUsername, canvas.width / 2, canvas.height * (1/4));
+		ctx.globalAlpha = 1;
+  }
+
+  if (popupFade > popupTime) {
+    killPopup = false;
+    killedPopup = false;
+  }
+
   drawCursor();
 }
 

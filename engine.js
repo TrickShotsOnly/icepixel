@@ -13,7 +13,6 @@
     //Identification
     this.id = id;
     this.username = username;
-		this.accel = 0.4;
 
     //Shape
     var vertices = [
@@ -64,7 +63,7 @@
   exports.Projectile = function(pos, vel, id) {
     this.pos = pos;
     this.vel = new exports.Vec2(vel.x * 30, vel.y * 30);
-    this.lifeTime = 100;
+    this.lifeTime = 40;
     this.timer = 0
     this.dead = false;
     this.id = id;
