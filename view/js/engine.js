@@ -1,12 +1,11 @@
-(function(exports) {
+(function() {
+	if( typeof exports == 'undefined' ) {
+		exports = window;
+	}
 
   exports.Vec2 = function(x, y) {
     this.x = x;
     this.y = y;
-  }
-
-  exports.Shape = function(vertices) {
-    this.vertices = vertices;
   }
 
   exports.Player = function(id, username) {
@@ -20,31 +19,66 @@
     this.vel = new exports.Vec2(0, 0);
     this.maxVel = 0;
     this.pos = new exports.Vec2(0, 0);
+    this.accel = 18;
 
-		this.input = {};
+    this.input = {};
 
     this.color = "orange";
     this.fireTimer = 0;
     this.dead = false;
     this.score = 0;
 
-    this.update = function() {
-      this.fireTimer++;
-
-      if (this.vel.x >= this.maxVel) this.vel.x = this.maxVel;
-      if (this.vel.x <= -this.maxVel) this.vel.x = -this.maxVel;
-      if (this.vel.y >= this.maxVel) this.vel.y = this.maxVel;
-      if (this.vel.y <= -this.maxVel) this.vel.y = -this.maxVel;
-
-      this.pos.x += this.vel.x;
-      this.pos.y += this.vel.y;
-    }
-
     this.spawn = function(pos, vel) {
       this.pos = pos;
       this.vel = vel;
     }
   };
+
+  exports.updatePlayer = function(player, delta) {
+    if (player.input) {
+      var moveX = 0;
+      var moveY = 0;
+      if (player.input.left) moveX -= 1;
+      if (player.input.right) moveX += 1;
+      if (player.input.up) moveY -= 1;
+      if (player.input.down) moveY += 1;
+
+      player.vel.x += moveX * player.accel * 1/delta;
+      player.vel.y += moveY * player.accel * 1/delta;
+
+      if (moveX == 0) {
+        player.vel.x *= 0.98;
+      }
+      if (moveY == 0) {
+        player.vel.y *= 0.98;
+      }
+    }
+
+    if (player.pos.x < -500 + 20) {
+      player.vel.x += 100 * 1/delta;
+    }
+    if (player.pos.x > 1500 - 20) {
+      player.vel.x -= 100 * 1/delta;
+    }
+
+    if (player.pos.y < -500 + 20) {
+      player.vel.y += 100 * 1/delta;
+    }
+
+    if (player.pos.y > 1000 - 20) {
+      player.vel.y -= 100 * 1/delta;
+    }
+
+    player.fireTimer++;
+
+    if (player.vel.x >= player.maxVel) player.vel.x = player.maxVel;
+    if (player.vel.x <= -player.maxVel) player.vel.x = -player.maxVel;
+    if (player.vel.y >= player.maxVel) player.vel.y = player.maxVel;
+    if (player.vel.y <= -player.maxVel) player.vel.y = -player.maxVel;
+
+    player.pos.x += player.vel.x * 1/delta;
+    player.pos.y += player.vel.y * 1/delta;
+  }
 
   exports.Projectile = function(pos, vel, id) {
     this.pos = pos;
@@ -53,20 +87,20 @@
     this.timer = 0
     this.dead = false;
     this.id = id;
-
-    this.update = function() {
-      this.timer++;
-      if (this.timer >= this.lifeTime) {
-        this.dead = true;
-        return;
-      }
-      this.vel.x *= 0.98;
-      this.vel.y *= 0.98;
-
-      this.pos.x += this.vel.x;
-      this.pos.y += this.vel.y;
-    };
   }
+
+	exports.updateProjectile = function(proj, delta) {
+		proj.timer++;
+		if (proj.timer >= proj.lifeTime) {
+			proj.dead = true;
+			return;
+		}
+		proj.vel.x *= 0.98;
+		proj.vel.y *= 0.98;
+
+		proj.pos.x += proj.vel.x * 1/delta;
+		proj.pos.y += proj.vel.y * 1/delta;
+	}
 
   exports.Wall = function(pos1, pos2, color) {
     this.pos1 = pos1;
@@ -134,5 +168,4 @@
       console.log(this.map.walls);
     }
   };
-
-})(typeof exports === "undefined" ? this["engine"] = {} : exports);
+}).call(this);

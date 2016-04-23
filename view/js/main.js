@@ -4,15 +4,9 @@ var socket = io();
 var canvas;
 var ctx;
 
-var nextRoom;
 var curRoom;
-var lastRoom;
 
 var lastUpdate;
-
-var lastRoomUpdate;
-var roomDelta;
-var roomLerpTimer;
 
 var playing = false;
 var playerIndex = 0;
@@ -168,14 +162,7 @@ function play(id) {
   update();
 
   socket.on("roomUpdate", function(room) {
-    var now = Date.now();
-    roomDelta = now - lastRoomUpdate;
-    lastRoomUpdate = now;
-    roomLerpTimer = 0;
-
-    lastRoom = nextRoom;
-    curRoom = nextRoom;
-    nextRoom = room;
+    curRoom = room;
   });
 
   socket.on("kill", function(username) {
@@ -199,21 +186,15 @@ function update() {
   var delta = now - lastUpdate;
   lastUpdate = now;
 
-  roomLerpTimer += delta;
-
   if (curRoom) {
     for (i = 0; i < curRoom.players.length; i++) {
-      if (nextRoom.players[i]) {
-        curRoom.players[i].pos.x += (nextRoom.players[i].pos.x - lastRoom.players[i].pos.x) * (roomLerpTimer / roomDelta);
-        curRoom.players[i].pos.y += (nextRoom.players[i].pos.y - lastRoom.players[i].pos.y) * (roomLerpTimer / roomDelta);
-      }
+      updatePlayer(curRoom.players[i], delta);
     }
     for (i = 0; i < curRoom.projectiles.length; i++) {
-      curRoom.projectiles[i].pos.x += curRoom.projectiles[i].vel.x;
-      curRoom.projectiles[i].pos.y += curRoom.projectiles[i].vel.y;
+			updateProjectile(curRoom.projectiles[i], delta);
     }
 
-    //var lerp = 2;
+    //var lerp = 9;
     //camX += (curRoom.players[playerIndex].pos.x - camX - (canvas.width / 2)) * 1/delta * lerp;
     //camY += (curRoom.players[playerIndex].pos.y - camY - (canvas.height / 2)) * 1/delta * lerp;
 
@@ -270,7 +251,7 @@ function render() {
   if (curRoom) {
     //Projectiles
     for (i = 0; i < curRoom.projectiles.length; i++) {
-      if (nextRoom.projectiles[i] && !nextRoom.projectiles[i].dead) {
+      if (curRoom.projectiles[i] && !curRoom.projectiles[i].dead) {
         ctx.fillStyle = "#2199ff";
         ctx.globalAlpha = (curRoom.projectiles[i].lifeTime - curRoom.projectiles[i].timer) / curRoom.projectiles[i].lifeTime;
         ctx.fillRect(curRoom.projectiles[i].pos.x - 10 - camX, curRoom.projectiles[i].pos.y - 10 - camY, 20, 20);
@@ -279,7 +260,7 @@ function render() {
     }
     //Players
     for (i = 0; i < curRoom.players.length; i++) {
-      if (nextRoom.players[i] && !nextRoom.players[i].dead) {
+      if (curRoom.players[i] && !curRoom.players[i].dead) {
         ctx.fillStyle = curRoom.players[i].color;
         ctx.fillRect(curRoom.players[i].pos.x - (curRoom.players[i].width / 2) - camX, curRoom.players[i].pos.y - (curRoom.players[i].width / 2) - camY, curRoom.players[i].width, curRoom.players[i].height);
         ctx.font = "20px Play";
@@ -314,19 +295,19 @@ function render() {
     killedPopup = false;
   }
 
-	drawScoreboard();
+  drawScoreboard();
   drawCursor();
 }
 
 function drawScoreboard() {
-	ctx.fillStyle = "#ffffff";
-	ctx.font = "16px Play";
-	ctx.textAlign = "left";
-	if(curRoom) {
-		for(i = 0; i < curRoom.players.length; i++) {
-			ctx.fillText(curRoom.players[i].username + " - " + curRoom.players[i].score, 30, 30 + (i * 30));
-		}
-	}
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "16px Play";
+  ctx.textAlign = "left";
+  if (curRoom) {
+    for (i = 0; i < curRoom.players.length; i++) {
+      ctx.fillText(curRoom.players[i].username + " - " + curRoom.players[i].score, 30, 30 + (i * 30));
+    }
+  }
 
 }
 

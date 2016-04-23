@@ -1,8 +1,8 @@
 {
   "port": 9000,
-  "updateDelta": 40,
+  "updateDelta": 30,
   "players": {
-    "maxVel": 15
+    "maxVel": 200
   },
   "adminPassword": "hashtagselfie123"
 }
