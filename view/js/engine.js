@@ -19,7 +19,7 @@
     this.vel = new exports.Vec2(0, 0);
     this.maxVel = 0;
     this.pos = new exports.Vec2(0, 0);
-    this.accel = 18;
+    this.accel = 0.001;
 
     this.input = {};
 
@@ -43,8 +43,8 @@
       if (player.input.up) moveY -= 1;
       if (player.input.down) moveY += 1;
 
-      player.vel.x += moveX * player.accel * 1/delta;
-      player.vel.y += moveY * player.accel * 1/delta;
+      player.vel.x += moveX * player.accel * delta;
+      player.vel.y += moveY * player.accel * delta;
 
       if (moveX == 0) {
         player.vel.x *= 0.98;
@@ -55,18 +55,18 @@
     }
 
     if (player.pos.x < -500 + 20) {
-      player.vel.x += 100 * 1/delta;
+      player.vel.x += 0.0035 * delta;
     }
     if (player.pos.x > 1500 - 20) {
-      player.vel.x -= 100 * 1/delta;
+      player.vel.x -= 0.0035 * delta;
     }
 
     if (player.pos.y < -500 + 20) {
-      player.vel.y += 100 * 1/delta;
+      player.vel.y += 0.0035 * delta;
     }
 
     if (player.pos.y > 1000 - 20) {
-      player.vel.y -= 100 * 1/delta;
+      player.vel.y -= 0.0035 * delta;
     }
 
     player.fireTimer++;
@@ -76,13 +76,13 @@
     if (player.vel.y >= player.maxVel) player.vel.y = player.maxVel;
     if (player.vel.y <= -player.maxVel) player.vel.y = -player.maxVel;
 
-    player.pos.x += player.vel.x * 1/delta;
-    player.pos.y += player.vel.y * 1/delta;
+    player.pos.x += player.vel.x * delta;
+    player.pos.y += player.vel.y * delta;
   }
 
   exports.Projectile = function(pos, vel, id) {
     this.pos = pos;
-    this.vel = new exports.Vec2(vel.x * 30, vel.y * 30);
+    this.vel = new exports.Vec2(vel.x * 5, vel.y * 5);
     this.lifeTime = 70;
     this.timer = 0
     this.dead = false;
@@ -98,8 +98,8 @@
 		proj.vel.x *= 0.98;
 		proj.vel.y *= 0.98;
 
-		proj.pos.x += proj.vel.x * 1/delta;
-		proj.pos.y += proj.vel.y * 1/delta;
+		proj.pos.x += proj.vel.x * delta;
+		proj.pos.y += proj.vel.y * delta;
 	}
 
   exports.Wall = function(pos1, pos2, color) {

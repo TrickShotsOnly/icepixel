@@ -7,8 +7,8 @@ var bodyParser = require("body-parser");
 var engine = require("./view/js/engine");
 var UUID = require("node-uuid");
 
-var projMult = 0.05;
-var projBase = 0.3;
+var projMult = 0.25;
+var projBase = 0.15;
 
 var lastUpdate;
 
@@ -148,10 +148,10 @@ function updateRooms() {
       for (p = 0; p < rooms[a].data.players.length; p++) {
         if (curProj.pos.x > rooms[a].data.players[p].pos.x - (rooms[a].data.players[p].width) && curProj.pos.x < rooms[a].data.players[p].pos.x + (rooms[a].data.players[p].width) && curProj.pos.y > rooms[a].data.players[p].pos.y - (rooms[a].data.players[p].height) && curProj.pos.y < rooms[a].data.players[p].pos.y + (rooms[a].data.players[p].height)) {
           if (rooms[a].data.players[p].id != curProj.id) {
-            rooms[a].getPlayerById(curProj.id).score++;
             clients[curProj.id].emit("kill", rooms[a].data.players[p].username);
             clients[rooms[a].data.players[p].id].emit("killed", rooms[a].getPlayerById(curProj.id).username);
-            console.log(curProj.id);
+
+	          rooms[a].getPlayerById(curProj.id).score++;
             rooms[a].data.players[p].dead = true;
             curProj.dead = true;
           }

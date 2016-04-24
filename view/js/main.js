@@ -15,7 +15,7 @@ var WORLD_START_X = -1500;
 var WORLD_START_Y = -1000;
 var WORLD_END_X = 4300;
 var WORLD_END_Y = 3000;
-var GRID_SIZE = 75;
+var GRID_SIZE = 200;
 
 var camX,
   camY;
@@ -213,20 +213,20 @@ function render() {
     ctx.globalAlpha = (popupFade + 1) / popupTime;
   }
 
-  for (i = WORLD_START_X; i < WORLD_END_X; i += GRID_SIZE) {
+  for (i = WORLD_START_X; i < WORLD_END_X / GRID_SIZE; i += 1) {
     ctx.beginPath();
-    ctx.moveTo(WORLD_START_X + i - camX, WORLD_START_Y - camY);
-    ctx.lineTo(WORLD_START_X + i - camX, WORLD_END_Y - camY);
+    ctx.moveTo(WORLD_START_X + (i * GRID_SIZE) - camX, WORLD_START_Y - camY);
+    ctx.lineTo(WORLD_START_X + (i * GRID_SIZE) - camX, WORLD_END_Y - camY);
     ctx.lineWidth = 1;
     ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
     ctx.stroke();
     ctx.fill();
   }
 
-  for (i = WORLD_START_Y; i < WORLD_END_Y; i += GRID_SIZE) {
+  for (i = WORLD_START_Y; i < WORLD_END_Y / GRID_SIZE; i += 1) {
     ctx.beginPath();
-    ctx.moveTo(WORLD_START_X - camX, WORLD_START_Y + i - camY);
-    ctx.lineTo(WORLD_END_X - camX, WORLD_START_Y + i - camY);
+    ctx.moveTo(WORLD_START_X - camX, WORLD_START_Y + (i * GRID_SIZE) - camY);
+    ctx.lineTo(WORLD_END_X - camX, WORLD_START_Y + (i * GRID_SIZE) - camY);
     ctx.lineWidth = 1;
     ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
     ctx.stroke();
