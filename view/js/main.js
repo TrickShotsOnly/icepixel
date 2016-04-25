@@ -1,35 +1,44 @@
 var numRooms;
 var id;
 var socket = io();
-var canvas;
-var ctx;
+
+var renderer;
+var stage;
+var graphics;
+var scoreboard;
 
 var curRoom;
+var curPos = new Vec2(0, 0);
 
 var lastUpdate;
 
 var playing = false;
 var playerIndex = 0;
 
-var WORLD_START_X = -1500;
-var WORLD_START_Y = -1000;
-var WORLD_END_X = 4300;
-var WORLD_END_Y = 3000;
-var GRID_SIZE = 200;
+var WORLD_START_X = -500;
+var WORLD_START_Y = -500;
+var WORLD_END_X = 4500;
+var WORLD_END_Y = 4000;
+var GRID_SIZE = 100;
+
+var WIDTH,
+  HEIGHT;
 
 var camX,
-  camY;
+  camY = 0;
 
 var mouseX,
   mouseY;
 
 var map;
 
-var popupFade = 0;
-var popupTime = 100;
+var popupTimer = 0;
+var popupDur = 100;
 var killPopup = false;
 var killedPopup = false;
-var otherUsername;
+var popup;
+
+var pulseDur = 6000;
 
 var keypress = {},
   prevKeypress = {
@@ -42,90 +51,50 @@ var keypress = {},
   altLeft = 65,
   altUp = 87,
   altRight = 68,
-  altDown = 83;
+  altDown = 83,
+  space = 32;
 
-$(document).ready(function() {
-  $("#start").css({
-    opacity: 0
+function play(pos) {
+
+	curPos = pos;
+
+  WIDTH = window.innerWidth;
+  HEIGHT = window.innerHeight;
+
+  renderer = new PIXI.autoDetectRenderer(WIDTH, HEIGHT, {
+    backgroundColor: 0x000000,
+    antialias: true
   });
-  $("#start").animate({
-    opacity: 1
-  }, 200);
+  document.body.appendChild(renderer.view);
 
-  socket.on("numRooms", function(data) {
-    for (i = 0; i < data; i++) {
-      $("#s").append('<option value="' + i + '">Room ' + i + '</option>');
-    }
+  stage = new PIXI.Container();
+  graphics = new PIXI.Graphics();
+  stage.addChild(graphics);
+
+  scoreboard = new PIXI.Text("", {
+    font: "20px Play",
+    fill: 0xffffff,
+    align: "left"
   });
+  scoreboard.position.x = 20;
+  scoreboard.position.y = 20;
+  stage.addChild(scoreboard);
 
-  $("#form").on("submit", function(event) {
-    event.preventDefault();
-    join($("#s").val(), $("#m").val());
-    return false;
+  popup = new PIXI.Text("", {
+    font: "40px Play",
+    fill: 0xffffff,
+    align: "center"
   });
-});
+  popup.position.x = WIDTH / 2;
+  popup.position.y = HEIGHT * (1 / 3);
+  stage.addChild(popup);
 
-function join(room, username) {
-  socket.emit("joinRoom", room);
-  if (username == "" || username == null) {
-    notify("Please enter a username", "red");
-    return;
-  }
-  socket.on("joinRoomResponse", function(res) {
-    if (res == 0) {
-      socket.emit("username", username);
-      socket.on("play", function(res) {
-        if (res == 0) {
-          play();
-        } else {
-          notify("Please enter a username", "red");
-        }
-      });
-    } else {
-      notify("Room not available.", "red");
-    }
-  })
-}
-
-function notify(message, color) {
-  var box = $("#notify-box");
-  box.html(message);
-  if (color == null) {
-    color = "#27de00";
-  }
-  box.css("background-color", color);
-  box.css("height", "auto");
-  var height = box.css("height");
-  box.css("height", "0px");
-  box.animate({
-    height: height
-  }, 300);
-}
-
-function play(id) {
-  var start = $("#start");
-  start.animate({
-    opacity: 0
-  }, 300);
-  start.promise().done(function() {
-    start.hide();
-  });
-
-  $("#content").append("<canvas id = 'ctx'>");
-  $("#ctx").css("opacity", "0");
-  $("canvas").animate({
-    opacity: 1
-  }, 300);
-  canvas = document.getElementById("ctx");
-  resize();
-  ctx = canvas.getContext("2d");
-
-  canvas.addEventListener("mousemove", function(evt) {
+  document.addEventListener("mousemove", function(evt) {
     mouseX = evt.clientX;
     mouseY = evt.clientY;
   });
 
-  canvas.addEventListener("click", function(evt) {
+  document.addEventListener("click", function(evt) {
     var pos = {
       x: mouseX + camX,
       y: mouseY + camY
@@ -144,7 +113,7 @@ function play(id) {
 
   document.addEventListener("keydown", function(evt) {
     keypress[evt.keyCode] = true;
-    if (evt.keyCode == 32) {
+    if (evt.keyCode == space) {
       var pos = {
         x: mouseX + camX,
         y: mouseY + camY
@@ -159,26 +128,24 @@ function play(id) {
     inputUpdate();
   })
 
-  update();
-
   socket.on("roomUpdate", function(room) {
     curRoom = room;
   });
 
   socket.on("kill", function(username) {
-    otherUsername = username;
-    popupFade = 0;
-    killPopup = true;
+    var text = "Killed " + username;
+    popup.text = text;
+    popupTimer = 0;
   });
 
-  socket.on("killed", function(username) {
-    otherUsername = username;
-    popupFade = 0;
-    killedPopup = true;
+  socket.on("killed", function(username, pos) {
+    var text = "Killed by " + username
+    popup.text = text;
+    popupTimer = 0;
+    curPos = pos;
   });
 
-  camX = 0;
-  camY = 0;
+  update();
 }
 
 function update() {
@@ -188,18 +155,20 @@ function update() {
 
   if (curRoom) {
     for (i = 0; i < curRoom.players.length; i++) {
-      updatePlayer(curRoom.players[i], delta);
+      if (i != playerIndex) {
+        updatePlayer(curRoom.players[i], delta);
+      } else {
+        curPos.x += (curRoom.players[i].pos.x - curPos.x) * 0.02 * delta;
+        curPos.y += (curRoom.players[i].pos.y - curPos.y) * 0.02 * delta;
+      }
     }
+
     for (i = 0; i < curRoom.projectiles.length; i++) {
-			updateProjectile(curRoom.projectiles[i], delta);
+      updateProjectile(curRoom.projectiles[i], delta);
     }
 
-    //var lerp = 9;
-    //camX += (curRoom.players[playerIndex].pos.x - camX - (canvas.width / 2)) * 1/delta * lerp;
-    //camY += (curRoom.players[playerIndex].pos.y - camY - (canvas.height / 2)) * 1/delta * lerp;
-
-    camX = curRoom.players[playerIndex].pos.x - (canvas.width / 2);
-    camY = curRoom.players[playerIndex].pos.y - (canvas.height / 2);
+    camX = curPos.x - (WIDTH / 2) - (curRoom.players[playerIndex].width / 2);
+    camY = curPos.y - (HEIGHT / 2) - (curRoom.players[playerIndex].height / 2);
   }
   render();
   window.requestAnimationFrame(update);
@@ -207,127 +176,100 @@ function update() {
 
 function render() {
   //Clear
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  graphics.clear();
 
-  if (killedPopup) {
-    ctx.globalAlpha = (popupFade + 1) / popupTime;
+  for (i = WORLD_START_X - WIDTH; i < (WORLD_END_X + WIDTH) / GRID_SIZE; i++) {
+    graphics.beginFill();
+    graphics.moveTo(WORLD_START_X - WIDTH + (i * GRID_SIZE) - camX, WORLD_START_Y - HEIGHT - camY);
+    graphics.lineTo(WORLD_START_X - WIDTH + (i * GRID_SIZE) - camX, WORLD_END_Y + HEIGHT - camY);
+    graphics.lineStyle(2, 0xb0d6e6, Math.abs((Date.now() % pulseDur) / pulseDur - 0.5) / 4 + 0.1);
+    graphics.endFill();
   }
 
-  for (i = WORLD_START_X; i < WORLD_END_X / GRID_SIZE; i += 1) {
-    ctx.beginPath();
-    ctx.moveTo(WORLD_START_X + (i * GRID_SIZE) - camX, WORLD_START_Y - camY);
-    ctx.lineTo(WORLD_START_X + (i * GRID_SIZE) - camX, WORLD_END_Y - camY);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
-    ctx.stroke();
-    ctx.fill();
-  }
-
-  for (i = WORLD_START_Y; i < WORLD_END_Y / GRID_SIZE; i += 1) {
-    ctx.beginPath();
-    ctx.moveTo(WORLD_START_X - camX, WORLD_START_Y + (i * GRID_SIZE) - camY);
-    ctx.lineTo(WORLD_END_X - camX, WORLD_START_Y + (i * GRID_SIZE) - camY);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
-    ctx.stroke();
-    ctx.fill();
+  for (i = WORLD_START_Y - HEIGHT; i < (WORLD_END_Y + HEIGHT) / GRID_SIZE; i++) {
+    graphics.beginFill();
+    graphics.moveTo(WORLD_START_X - WIDTH - camX, WORLD_START_Y - HEIGHT + (i * GRID_SIZE) - camY);
+    graphics.lineTo(WORLD_END_X + WIDTH - camX, WORLD_START_Y - HEIGHT + (i * GRID_SIZE) - camY);
+    graphics.lineStyle(2, 0xb0d6e6, Math.abs((Date.now() % pulseDur) / pulseDur - 0.5) / 4 + 0.1);
+    graphics.endFill();
   }
 
   if (map) {
     //Draw map
     for (var i = 0; i < map.walls.length; i++) {
-      if (map.walls.hasOwnProperty(i)) {
-        ctx.beginPath();
-        ctx.moveTo(map.walls[i].pos1.x - camX, map.walls[i].pos1.y - camY);
-        ctx.lineTo(map.walls[i].pos2.x - camX, map.walls[i].pos2.y - camY);
-        ctx.lineWidth = 5;
-        ctx.strokeStyle = map.walls[i].color;
-        ctx.stroke();
-        ctx.fill();
-      }
+      graphics.beginFill();
+      graphics.lineStyle(5, map.walls[i].color, map.walls[i].opacity);
+      graphics.moveTo(map.walls[i].pos1.x - camX, map.walls[i].pos1.y - camY);
+      graphics.lineTo(map.walls[i].pos2.x - camX, map.walls[i].pos2.y - camY);
+      graphics.lineStyle(0, 0xffffff);
+      graphics.endFill();
     }
   }
   //Draw room
   if (curRoom) {
     //Projectiles
     for (i = 0; i < curRoom.projectiles.length; i++) {
-      if (curRoom.projectiles[i] && !curRoom.projectiles[i].dead) {
-        ctx.fillStyle = "#2199ff";
-        ctx.globalAlpha = (curRoom.projectiles[i].lifeTime - curRoom.projectiles[i].timer) / curRoom.projectiles[i].lifeTime;
-        ctx.fillRect(curRoom.projectiles[i].pos.x - 10 - camX, curRoom.projectiles[i].pos.y - 10 - camY, 20, 20);
-        ctx.globalAlpha = 1;
-      }
+      graphics.beginFill(0x2199ff, (curRoom.projectiles[i].lifeTime - curRoom.projectiles[i].timer) / curRoom.projectiles[i].lifeTime);
+      graphics.drawRect(curRoom.projectiles[i].pos.x - 10 - camX, curRoom.projectiles[i].pos.y - 10 - camY, 20, 20);
+      graphics.endFill();
     }
     //Players
     for (i = 0; i < curRoom.players.length; i++) {
-      if (curRoom.players[i] && !curRoom.players[i].dead) {
-        ctx.fillStyle = curRoom.players[i].color;
-        ctx.fillRect(curRoom.players[i].pos.x - (curRoom.players[i].width / 2) - camX, curRoom.players[i].pos.y - (curRoom.players[i].width / 2) - camY, curRoom.players[i].width, curRoom.players[i].height);
-        ctx.font = "20px Play";
-        ctx.textAlign = "center";
-        ctx.fillText(curRoom.players[i].username, curRoom.players[i].pos.x - camX, curRoom.players[i].pos.y + curRoom.players[i].height - camY + 10);
+      graphics.beginFill(curRoom.players[i].color);
+      if (i != playerIndex) {
+        graphics.drawRect(curRoom.players[i].pos.x - (curRoom.players[i].width / 2) - camX, curRoom.players[i].pos.y - (curRoom.players[i].width / 2) - camY, curRoom.players[i].width, curRoom.players[i].height);
+
+      } else {
+        graphics.drawRect(curPos.x - (curRoom.players[i].width / 2) - camX, curPos.y - (curRoom.players[i].width / 2) - camY, curRoom.players[i].width, curRoom.players[i].height);
       }
+      graphics.endFill();
+      //ctx.fillText(curRoom.players[i].username, curRoom.players[i].pos.x - camX, curRoom.players[i].pos.y + curRoom.players[i].height - camY + 10);
     }
   }
 
-  popupFade++;
-
-  if (killPopup) {
-    ctx.globalAlpha = (popupTime - popupFade + 1) / popupTime;
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "30px Play";
-    ctx.textAlign = "center";
-    ctx.fillText("Killed " + otherUsername, canvas.width / 2, canvas.height * (1 / 4));
-    ctx.globalAlpha = 1;
-  }
-
-  if (killedPopup) {
-    ctx.globalAlpha = (popupTime - popupFade + 1) / popupTime;
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "30px Play";
-    ctx.textAlign = "center";
-    ctx.fillText("Killed by " + otherUsername, canvas.width / 2, canvas.height * (1 / 4));
-    ctx.globalAlpha = 1;
-  }
-
-  if (popupFade > popupTime) {
+  if (popupTimer > popupDur) {
     killPopup = false;
     killedPopup = false;
+    popup.text = "";
+  } else {
+    popup.alpha = (popupDur - popupTimer + 1) / popupDur;
+    popupTimer++;
   }
 
   drawScoreboard();
   drawCursor();
+
+  renderer.render(stage);
 }
 
 function drawScoreboard() {
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "16px Play";
-  ctx.textAlign = "left";
+  var text = "";
   if (curRoom) {
     for (i = 0; i < curRoom.players.length; i++) {
-      ctx.fillText(curRoom.players[i].username + " - " + curRoom.players[i].score, 30, 30 + (i * 30));
+      text += curRoom.players[i].username + " - " + curRoom.players[i].score + "\n";
     }
   }
-
+  scoreboard.text = text;
 }
 
 function drawCursor() {
-  ctx.fillStyle = "white";
-  ctx.shadowColor = "white";
-  ctx.shadowBlur = 40;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 0;
-  ctx.fillRect(mouseX - 15, mouseY - 1, 30, 2);
-  ctx.fillRect(mouseX - 1, mouseY - 15, 2, 30);
-  ctx.shadowBlur = 0;
+  graphics.beginFill(0xffffff);
+  graphics.drawRect(mouseX - 15, mouseY - 1, 30, 2);
+  graphics.drawRect(mouseX - 1, mouseY - 15, 2, 30);
+  graphics.endFill();
 }
 
 $(window).resize(resize);
 
 function resize() {
-  if (canvas) {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+  WIDTH = window.innerWidth;
+  HEIGHT = window.innerHeight;
+
+  if (popup && renderer) {
+    popup.position.x = WIDTH / 2;
+    popup.position.y = HEIGHT * (1 / 3);
+
+    renderer.resize(WIDTH, HEIGHT);
   }
 }
 
@@ -345,4 +287,8 @@ function inputUpdate() {
   if (keypress[down] || keypress[altDown]) input.down = true;
 
   socket.emit("inputUpdate", input);
+}
+
+function colorToNum(string) {
+  return Number(string.replace("#", "0x"));
 }

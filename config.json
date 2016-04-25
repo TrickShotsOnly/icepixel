@@ -1,6 +1,6 @@
 {
   "port": 9000,
-  "updateDelta": 45,
+  "updateDelta": 30,
   "players": {
     "maxVel": 1.3
   },

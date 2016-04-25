@@ -23,9 +23,8 @@
 
     this.input = {};
 
-    this.color = "orange";
+    this.color = 0xf57200;
     this.fireTimer = 0;
-    this.dead = false;
     this.score = 0;
 
     this.spawn = function(pos, vel) {
@@ -102,10 +101,11 @@
 		proj.pos.y += proj.vel.y * delta;
 	}
 
-  exports.Wall = function(pos1, pos2, color) {
+  exports.Wall = function(pos1, pos2, color, opacity) {
     this.pos1 = pos1;
     this.pos2 = pos2;
     this.color = color;
+		this.opacity = opacity;
   }
 
   exports.Room = function() {
@@ -162,7 +162,7 @@
     this.loadMap = function(map) {
       console.log("Loading map " + map.name);
       for (var wall in map.walls) {
-        wall = new exports.Wall(new exports.Vec2(map.walls[wall].x1, map.walls[wall].y1), new exports.Vec2(map.walls[wall].x2, map.walls[wall].y2), map.walls[wall].color);
+        wall = new exports.Wall(new exports.Vec2(map.walls[wall].x1, map.walls[wall].y1), new exports.Vec2(map.walls[wall].x2, map.walls[wall].y2), map.walls[wall].color, map.walls[wall].opacity);
         this.map.walls.push(wall);
       }
       console.log(this.map.walls);

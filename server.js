@@ -80,16 +80,18 @@ io.on("connection", function(socket) {
         return;
       }
 
+			var pos = new engine.Vec2(Math.random() * 2000 - 500, Math.random() * 1500 - 500);
+
       username = name;
       connected = true;
-      socket.emit("play", 0);
+      socket.emit("play", 0, pos);
       console.log("Connection: room: " + room + " id: " + id + " username: " + username);
 
       //Ingame
       var playerIndex = rooms[room].addPlayer(id, username);
       var curPlayer = rooms[room].getPlayerByIndex(playerIndex);
       curPlayer.maxVel = config.players.maxVel;
-      curPlayer.pos = new engine.Vec2(Math.random() * 2000 - 500, Math.random() * 1500 - 500);
+      curPlayer.pos = pos;
       curPlayer.vel = new engine.Vec2(Math.random() * 10 - 5, Math.random() * 10 - 5);
 
       //Save socket for further use
@@ -149,8 +151,9 @@ function updateRooms() {
         if (curProj.pos.x > rooms[a].data.players[p].pos.x - (rooms[a].data.players[p].width) && curProj.pos.x < rooms[a].data.players[p].pos.x + (rooms[a].data.players[p].width) && curProj.pos.y > rooms[a].data.players[p].pos.y - (rooms[a].data.players[p].height) && curProj.pos.y < rooms[a].data.players[p].pos.y + (rooms[a].data.players[p].height)) {
           if (rooms[a].data.players[p].id != curProj.id) {
             clients[curProj.id].emit("kill", rooms[a].data.players[p].username);
-            clients[rooms[a].data.players[p].id].emit("killed", rooms[a].getPlayerById(curProj.id).username);
+						rooms[a].data.players[i].spawn(new engine.Vec2(Math.random() * 2000 - 500, Math.random() * 1500 - 500), new engine.Vec2(Math.random() * 10 - 5, Math.random() * 10 - 5));
 
+						clients[rooms[a].data.players[p].id].emit("killed", rooms[a].getPlayerById(curProj.id).username, rooms[a].data.players[i].pos);
 	          rooms[a].getPlayerById(curProj.id).score++;
             rooms[a].data.players[p].dead = true;
             curProj.dead = true;
@@ -161,10 +164,6 @@ function updateRooms() {
 
     //Players
     for (i = 0; i < rooms[a].data.players.length; i++) {
-      if (rooms[a].data.players[i].dead) {
-        rooms[a].data.players[i].dead = false;
-        rooms[a].data.players[i].spawn(new engine.Vec2(Math.random() * 2000 - 500, Math.random() * 1500 - 500), new engine.Vec2(Math.random() * 10 - 5, Math.random() * 10 - 5));
-      }
       engine.updatePlayer(rooms[a].data.players[i], delta);
     }
   }
