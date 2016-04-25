@@ -21,6 +21,8 @@
     this.pos = new exports.Vec2(0, 0);
     this.accel = 0.001;
 
+		this.dead = false;
+
     this.input = {};
 
     this.color = 0xf57200;

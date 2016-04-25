@@ -123,7 +123,17 @@ io.on("connection", function(socket) {
       //Disconnections
       socket.on("disconnect", function() {
         rooms[room].removePlayerById(id);
-        console.log("Disconnection: room: " + room + " id: " + id + " username: " + username);
+				delete clients[id];
+
+				var keys = [];
+				for (var key in clients) {
+					if (clients.hasOwnProperty(key)) keys.push(key);
+				}
+
+				for (var i = playerIndex; i < keys.length; i++) {
+					clients[keys[i]].emit("subtractIndex");
+				}
+				console.log("Disconnection: room: " + room + " id: " + id + " username: " + username);
       });
     });
   });
@@ -151,9 +161,7 @@ function updateRooms() {
         if (curProj.pos.x > rooms[a].data.players[p].pos.x - (rooms[a].data.players[p].width) && curProj.pos.x < rooms[a].data.players[p].pos.x + (rooms[a].data.players[p].width) && curProj.pos.y > rooms[a].data.players[p].pos.y - (rooms[a].data.players[p].height) && curProj.pos.y < rooms[a].data.players[p].pos.y + (rooms[a].data.players[p].height)) {
           if (rooms[a].data.players[p].id != curProj.id) {
             clients[curProj.id].emit("kill", rooms[a].data.players[p].username);
-						rooms[a].data.players[i].spawn(new engine.Vec2(Math.random() * 2000 - 500, Math.random() * 1500 - 500), new engine.Vec2(Math.random() * 10 - 5, Math.random() * 10 - 5));
-
-						clients[rooms[a].data.players[p].id].emit("killed", rooms[a].getPlayerById(curProj.id).username, rooms[a].data.players[i].pos);
+						clients[rooms[a].data.players[p].id].emit("killed", rooms[a].getPlayerById(curProj.id).username);
 	          rooms[a].getPlayerById(curProj.id).score++;
             rooms[a].data.players[p].dead = true;
             curProj.dead = true;
@@ -164,6 +172,10 @@ function updateRooms() {
 
     //Players
     for (i = 0; i < rooms[a].data.players.length; i++) {
+			if(rooms[a].data.players[i].dead) {
+				rooms[a].data.players[i].spawn(new engine.Vec2(Math.random() * 2000 - 500, Math.random() * 1500 - 500), new engine.Vec2(Math.random() * 10 - 5, Math.random() * 10 - 5));
+				rooms[a].data.players[i].dead = false;
+			}
       engine.updatePlayer(rooms[a].data.players[i], delta);
     }
   }

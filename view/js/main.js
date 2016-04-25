@@ -85,6 +85,10 @@ function play(pos) {
     fill: 0xffffff,
     align: "center"
   });
+
+	popup.anchor.x = 0.5;
+	popup.anchor.y = 0.5;
+
   popup.position.x = WIDTH / 2;
   popup.position.y = HEIGHT * (1 / 3);
   stage.addChild(popup);
@@ -110,6 +114,11 @@ function play(pos) {
   socket.on("index", function(index) {
     playerIndex = index;
   });
+
+	socket.on("subtractIndex", function() {
+		playerIndex -= 1;
+		console.log(playerIndex);
+	})
 
   document.addEventListener("keydown", function(evt) {
     keypress[evt.keyCode] = true;
@@ -138,11 +147,10 @@ function play(pos) {
     popupTimer = 0;
   });
 
-  socket.on("killed", function(username, pos) {
+  socket.on("killed", function(username) {
     var text = "Killed by " + username
     popup.text = text;
     popupTimer = 0;
-    curPos = pos;
   });
 
   update();
@@ -155,11 +163,11 @@ function update() {
 
   if (curRoom) {
     for (i = 0; i < curRoom.players.length; i++) {
-      if (i != playerIndex) {
-        updatePlayer(curRoom.players[i], delta);
+      if (i == playerIndex) {
+				curPos.x += (curRoom.players[playerIndex].pos.x - curPos.x) * 0.02 * delta;
+        curPos.y += (curRoom.players[playerIndex].pos.y - curPos.y) * 0.02 * delta;
       } else {
-        curPos.x += (curRoom.players[i].pos.x - curPos.x) * 0.02 * delta;
-        curPos.y += (curRoom.players[i].pos.y - curPos.y) * 0.02 * delta;
+        updatePlayer(curRoom.players[i], delta);
       }
     }
 
@@ -167,8 +175,12 @@ function update() {
       updateProjectile(curRoom.projectiles[i], delta);
     }
 
-    camX = curPos.x - (WIDTH / 2) - (curRoom.players[playerIndex].width / 2);
-    camY = curPos.y - (HEIGHT / 2) - (curRoom.players[playerIndex].height / 2);
+		//var lerp = 9;
+		//camX += (curPos.x - camX - (WIDTH / 2)) * 1/delta * lerp;
+		//camY += (curPos.y - camY - (HEIGHT / 2)) * 1/delta * lerp;
+
+    camX = curPos.x - (WIDTH / 2) - 20;
+    camY = curPos.y - (HEIGHT / 2) - 20;
   }
   render();
   window.requestAnimationFrame(update);
