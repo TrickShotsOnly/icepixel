@@ -19,7 +19,7 @@
     this.vel = new exports.Vec2(0, 0);
     this.maxVel = 0;
     this.pos = new exports.Vec2(0, 0);
-    this.accel = 0.001;
+    this.accel = 0.002;
 
 		this.dead = false;
 
@@ -48,26 +48,11 @@
       player.vel.y += moveY * player.accel * delta;
 
       if (moveX == 0) {
-        player.vel.x *= 0.98;
+        player.vel.x *= 0.9;
       }
       if (moveY == 0) {
-        player.vel.y *= 0.98;
+        player.vel.y *= 0.9;
       }
-    }
-
-    if (player.pos.x < -500 + 20) {
-      player.vel.x += 0.0035 * delta;
-    }
-    if (player.pos.x > 1500 - 20) {
-      player.vel.x -= 0.0035 * delta;
-    }
-
-    if (player.pos.y < -500 + 20) {
-      player.vel.y += 0.0035 * delta;
-    }
-
-    if (player.pos.y > 1000 - 20) {
-      player.vel.y -= 0.0035 * delta;
     }
 
     player.fireTimer++;
@@ -103,9 +88,11 @@
 		proj.pos.y += proj.vel.y * delta;
 	}
 
-  exports.Wall = function(pos1, pos2, color, opacity) {
-    this.pos1 = pos1;
-    this.pos2 = pos2;
+  exports.Wall = function(x, y, width, height, color, opacity) {
+    this.x = x;
+		this.y = y;
+    this.width = width;
+		this.height = height;
     this.color = color;
 		this.opacity = opacity;
   }
@@ -164,7 +151,7 @@
     this.loadMap = function(map) {
       console.log("Loading map " + map.name);
       for (var wall in map.walls) {
-        wall = new exports.Wall(new exports.Vec2(map.walls[wall].x1, map.walls[wall].y1), new exports.Vec2(map.walls[wall].x2, map.walls[wall].y2), map.walls[wall].color, map.walls[wall].opacity);
+        wall = new exports.Wall(map.walls[wall].x, map.walls[wall].y, map.walls[wall].width, map.walls[wall].height, map.walls[wall].color, map.walls[wall].opacity);
         this.map.walls.push(wall);
       }
       console.log(this.map.walls);

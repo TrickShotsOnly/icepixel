@@ -25,7 +25,7 @@ var WIDTH,
   HEIGHT;
 
 var camX,
-  camY = 0;
+  camY;
 
 var mouseX,
   mouseY;
@@ -57,6 +57,8 @@ var keypress = {},
 function play(pos) {
 
 	curPos = pos;
+	camX = curPos.x;
+	camY = curPos.y;
 
   WIDTH = window.innerWidth;
   HEIGHT = window.innerHeight;
@@ -172,7 +174,7 @@ function update() {
     }
 
     for (i = 0; i < curRoom.projectiles.length; i++) {
-      updateProjectile(curRoom.projectiles[i], delta);
+      //updateProjectile(curRoom.projectiles[i], delta);
     }
 
 		//var lerp = 9;
@@ -190,6 +192,7 @@ function render() {
   //Clear
   graphics.clear();
 
+/*
   for (i = WORLD_START_X - WIDTH; i < (WORLD_END_X + WIDTH) / GRID_SIZE; i++) {
     graphics.beginFill();
     graphics.moveTo(WORLD_START_X - WIDTH + (i * GRID_SIZE) - camX, WORLD_START_Y - HEIGHT - camY);
@@ -205,18 +208,8 @@ function render() {
     graphics.lineStyle(2, 0xb0d6e6, Math.abs((Date.now() % pulseDur) / pulseDur - 0.5) / 4 + 0.1);
     graphics.endFill();
   }
+	*/
 
-  if (map) {
-    //Draw map
-    for (var i = 0; i < map.walls.length; i++) {
-      graphics.beginFill();
-      graphics.lineStyle(5, map.walls[i].color, map.walls[i].opacity);
-      graphics.moveTo(map.walls[i].pos1.x - camX, map.walls[i].pos1.y - camY);
-      graphics.lineTo(map.walls[i].pos2.x - camX, map.walls[i].pos2.y - camY);
-      graphics.lineStyle(0, 0xffffff);
-      graphics.endFill();
-    }
-  }
   //Draw room
   if (curRoom) {
     //Projectiles
@@ -238,6 +231,15 @@ function render() {
       //ctx.fillText(curRoom.players[i].username, curRoom.players[i].pos.x - camX, curRoom.players[i].pos.y + curRoom.players[i].height - camY + 10);
     }
   }
+
+	if (map) {
+		//Draw map
+		for (var i = 0; i < map.walls.length; i++) {
+			graphics.beginFill(map.walls[i].color, map.walls[i].opacity);
+			graphics.drawRect(map.walls[i].x - camX, map.walls[i].y - camY, map.walls[i].width, map.walls[i].height);
+			graphics.endFill();
+		}
+	}
 
   if (popupTimer > popupDur) {
     killPopup = false;
